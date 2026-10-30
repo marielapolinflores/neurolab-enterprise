@@ -1,3 +1,4 @@
+
 export interface BackendProject {
   id: string
   name: string
@@ -32,7 +33,13 @@ export interface BackendDataset {
   metadata_json: Record<string, any>
 }
 
-export type BackendJobStatus = 'QUEUED' | 'PREPARING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED'
+export type BackendJobStatus =
+  | 'QUEUED'
+  | 'PREPARING'
+  | 'RUNNING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'CANCELLED'
 
 export interface BackendTrainingJob {
   id: string
@@ -94,22 +101,34 @@ export interface HealthResponse {
   error?: string
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1'
-const BACKEND_ROOT = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
+const API_BASE = (
+  import.meta.env.VITE_API_BASE_URL || '/api/v1'
+).replace(/\/+$/, '')
+
+const BACKEND_ROOT = (
+  import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
+).replace(/\/+$/, '')
 
 function getHeaders(): HeadersInit {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   }
+
   const token = localStorage.getItem('neurolab_jwt_token')
+
   if (token) {
     headers['Authorization'] = `Bearer ${token}`
   }
+
   return headers
 }
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
   const url = `${API_BASE}${endpoint}`
+
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -120,14 +139,17 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   if (!response.ok) {
     let errorDetail = `Error HTTP ${response.status}: ${response.statusText}`
+
     try {
       const json = await response.json()
+
       if (json && (json.detail || json.message)) {
         errorDetail = json.detail || json.message
       }
     } catch {
-      // not json
+      // La respuesta no contiene JSON
     }
+
     throw new Error(errorDetail)
   }
 
@@ -139,28 +161,40 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 }
 
 export const api = {
-  // Comprobación de salud / conectividad con FastAPI
+  // Comprobar conexión directamente con FastAPI en Render
   async checkHealth(): Promise<HealthResponse> {
     try {
-      // Intentar primero con la ruta directa o proxy /health
-      const res = await fetch('/health', { signal: AbortSignal.timeout(4000) })
-      if (res.ok) {
-        const data = await res.json()
-        return { online: true, ...data }
-      }
-    } catch {
-      // Intentar con la URL completa si proxy falló
-      try {
-        const directRes = await fetch(`${BACKEND_ROOT}/health`, { signal: AbortSignal.timeout(4000) })
-        if (directRes.ok) {
-          const data = await directRes.json()
-          return { online: true, ...data }
+      const response = await fetch(`${BACKEND_ROOT}/health`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(15000),
+      })
+
+      if (!response.ok) {
+        return {
+          online: false,
+          error: `Backend respondió HTTP ${response.status}`,
         }
-      } catch (err: any) {
-        return { online: false, error: err?.message || 'Inaccesible' }
+      }
+
+      const data = await response.json()
+
+      return {
+        online: true,
+        ...data,
+      }
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'No se pudo conectar con Render'
+
+      console.error('Error conectando con el backend:', message)
+
+      return {
+        online: false,
+        error: message,
       }
     }
-    return { online: false, error: 'Respuesta no válida' }
   },
 
   // Proyectos
@@ -168,10 +202,16 @@ export const api = {
     return request<BackendProject[]>('/projects')
   },
 
-  async createProject(name: string, description?: string): Promise<BackendProject> {
+  async createProject(
+    name: string,
+    description?: string
+  ): Promise<BackendProject> {
     return request<BackendProject>('/projects', {
       method: 'POST',
-      body: JSON.stringify({ name, description: description || null }),
+      body: JSON.stringify({
+        name,
+        description: description || null,
+      }),
     })
   },
 
@@ -182,34 +222,58 @@ export const api = {
   // Arquitecturas
   async createArchitecture(
     projectId: string,
-    data: { name: string; family: 'Feedforward' | 'RNN' | 'CNN' | 'GAN'; config: any }
+    data: {
+      name: string
+      family: 'Feedforward' | 'RNN' | 'CNN' | 'GAN'
+      config: any
+    }
   ): Promise<BackendArchitecture> {
-    return request<BackendArchitecture>(`/projects/${projectId}/architectures`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
+    return request<BackendArchitecture>(
+      `/projects/${projectId}/architectures`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    )
   },
 
-  async listArchitectures(projectId: string): Promise<BackendArchitecture[]> {
-    return request<BackendArchitecture[]>(`/projects/${projectId}/architectures`)
+  async listArchitectures(
+    projectId: string
+  ): Promise<BackendArchitecture[]> {
+    return request<BackendArchitecture[]>(
+      `/projects/${projectId}/architectures`
+    )
   },
 
   // Datasets
   async createDataset(
     projectId: string,
-    data: { name: string; metadata?: Record<string, any> }
+    data: {
+      name: string
+      metadata?: Record<string, any>
+    }
   ): Promise<BackendDataset> {
-    return request<BackendDataset>(`/projects/${projectId}/datasets`, {
-      method: 'POST',
-      body: JSON.stringify({ name: data.name, metadata: data.metadata || {} }),
-    })
+    return request<BackendDataset>(
+      `/projects/${projectId}/datasets`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          name: data.name,
+          metadata: data.metadata || {},
+        }),
+      }
+    )
   },
 
-  async listDatasets(projectId: string): Promise<BackendDataset[]> {
-    return request<BackendDataset[]>(`/projects/${projectId}/datasets`)
+  async listDatasets(
+    projectId: string
+  ): Promise<BackendDataset[]> {
+    return request<BackendDataset[]>(
+      `/projects/${projectId}/datasets`
+    )
   },
 
-  // Trabajos de Entrenamiento
+  // Trabajos de entrenamiento
   async createTrainingJob(
     projectId: string,
     data: {
@@ -220,45 +284,70 @@ export const api = {
       optimizer?: string
     }
   ): Promise<BackendTrainingJob> {
-    return request<BackendTrainingJob>(`/projects/${projectId}/training-jobs`, {
-      method: 'POST',
-      body: JSON.stringify({
-        architecture_id: data.architecture_id,
-        dataset_id: data.dataset_id || null,
-        epochs: data.epochs,
-        batch_size: data.batch_size || 32,
-        optimizer: data.optimizer || 'adam',
-      }),
-    })
+    return request<BackendTrainingJob>(
+      `/projects/${projectId}/training-jobs`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          architecture_id: data.architecture_id,
+          dataset_id: data.dataset_id || null,
+          epochs: data.epochs,
+          batch_size: data.batch_size || 32,
+          optimizer: data.optimizer || 'adam',
+        }),
+      }
+    )
   },
 
-  async listTrainingJobs(projectId?: string): Promise<BackendTrainingJob[]> {
+  async listTrainingJobs(
+    projectId?: string
+  ): Promise<BackendTrainingJob[]> {
     if (projectId) {
-      return request<BackendTrainingJob[]>(`/projects/${projectId}/training-jobs`)
+      return request<BackendTrainingJob[]>(
+        `/projects/${projectId}/training-jobs`
+      )
     }
+
     return request<BackendTrainingJob[]>('/training-jobs')
   },
 
-  async getTrainingJob(jobId: string): Promise<BackendTrainingJob> {
-    return request<BackendTrainingJob>(`/training-jobs/${jobId}`)
+  async getTrainingJob(
+    jobId: string
+  ): Promise<BackendTrainingJob> {
+    return request<BackendTrainingJob>(
+      `/training-jobs/${jobId}`
+    )
   },
 
-  async cancelTrainingJob(jobId: string): Promise<BackendTrainingJob> {
-    return request<BackendTrainingJob>(`/training-jobs/${jobId}/cancel`, {
-      method: 'POST',
-    })
+  async cancelTrainingJob(
+    jobId: string
+  ): Promise<BackendTrainingJob> {
+    return request<BackendTrainingJob>(
+      `/training-jobs/${jobId}/cancel`,
+      {
+        method: 'POST',
+      }
+    )
   },
 
-  // Modelos y Auditoría
-  async listModels(projectId: string): Promise<BackendModelVersion[]> {
-    return request<BackendModelVersion[]>(`/projects/${projectId}/models`)
+  // Modelos y auditoría
+  async listModels(
+    projectId: string
+  ): Promise<BackendModelVersion[]> {
+    return request<BackendModelVersion[]>(
+      `/projects/${projectId}/models`
+    )
   },
 
-  async listAuditEvents(projectId: string): Promise<BackendAuditEvent[]> {
-    return request<BackendAuditEvent[]>(`/projects/${projectId}/audit-events`)
+  async listAuditEvents(
+    projectId: string
+  ): Promise<BackendAuditEvent[]> {
+    return request<BackendAuditEvent[]>(
+      `/projects/${projectId}/audit-events`
+    )
   },
 
-  // Suscripción SSE a eventos en tiempo real de entrenamiento
+  // Suscripción SSE a eventos de entrenamiento
   subscribeTrainingEvents(
     jobId: string,
     onData: (data: TrainingEventPayload) => void,
@@ -266,32 +355,44 @@ export const api = {
     onError?: (err: any) => void
   ): () => void {
     const sseUrl = `${API_BASE}/training-jobs/${jobId}/events`
+
     const eventSource = new EventSource(sseUrl)
 
     const handlePayload = (raw: string) => {
       try {
         const parsed: TrainingEventPayload = JSON.parse(raw)
+
         onData(parsed)
-        if (['COMPLETED', 'FAILED', 'CANCELLED'].includes(parsed.status)) {
-          if (onFinish) onFinish(parsed)
+
+        if (
+          ['COMPLETED', 'FAILED', 'CANCELLED'].includes(
+            parsed.status
+          )
+        ) {
+          if (onFinish) {
+            onFinish(parsed)
+          }
+
           eventSource.close()
         }
-      } catch (e) {
-        console.warn('Error parseando evento SSE:', e)
+      } catch (error) {
+        console.warn('Error parseando evento SSE:', error)
       }
     }
 
-    eventSource.addEventListener('training', (e: MessageEvent) => {
-      handlePayload(e.data)
+    eventSource.addEventListener('training', (event: MessageEvent) => {
+      handlePayload(event.data)
     })
 
-    eventSource.onmessage = (e: MessageEvent) => {
-      handlePayload(e.data)
+    eventSource.onmessage = (event: MessageEvent) => {
+      handlePayload(event.data)
     }
 
-    eventSource.onerror = (err) => {
-      if (onError) onError(err)
-      // Cerrar si falló la conexión
+    eventSource.onerror = (error) => {
+      if (onError) {
+        onError(error)
+      }
+
       eventSource.close()
     }
 
@@ -300,4 +401,3 @@ export const api = {
     }
   },
 }
-
