@@ -161,7 +161,7 @@ async function request<T>(
 }
 
 export const api = {
-  // Comprobar conexión directamente con FastAPI en Render
+  // Comprobar conexión con FastAPI
   async checkHealth(): Promise<HealthResponse> {
     try {
       const response = await fetch(`${BACKEND_ROOT}/health`, {
@@ -186,7 +186,7 @@ export const api = {
       const message =
         err instanceof Error
           ? err.message
-          : 'No se pudo conectar con Render'
+          : 'No se pudo conectar con el backend'
 
       console.error('Error conectando con el backend:', message)
 
@@ -219,6 +219,7 @@ export const api = {
     return request<BackendProject>(`/projects/${projectId}`)
   },
 
+  // Eliminar proyecto
   async deleteProject(projectId: string): Promise<void> {
     return request<void>(`/projects/${projectId}`, {
       method: 'DELETE',
