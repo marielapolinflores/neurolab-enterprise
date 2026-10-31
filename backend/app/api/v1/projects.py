@@ -1,9 +1,9 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.models import Project, ProjectMember, Architecture, Dataset
+from app.models import Project, ProjectMember, Architecture, Dataset, AuditEvent
 from app.schemas.schemas import ProjectCreate, ProjectOut, ArchitectureCreate, ArchitectureOut, DatasetCreate, DatasetOut
 from app.core.auth import current_user
 from app.services.authorization import get_project_or_404, can_write
@@ -22,11 +22,21 @@ def create_project(body: ProjectCreate, db: Session=Depends(get_db), user=Depend
 @router.get("/{project_id}", response_model=ProjectOut)
 def get_project(project_id: UUID, db: Session=Depends(get_db), user=Depends(current_user)): return get_project_or_404(db,project_id,user.id)
 
+@router.delete("/{project_id}", status_code=204)
+def delete_project(project_id: UUID, db: Session=Depends(get_db), user=Depends(current_user)):
+    p = get_project_or_404(db, project_id, user.id)
+    if p.owner_id != user.id:
+        raise HTTPException(status_code=403, detail="Solo el propietario puede eliminar el proyecto")
+    db.add(AuditEvent(actor_id=user.id, project_id=None, action="project.deleted", metadata_json={"project_name": p.name, "project_id": str(p.id)}))
+    db.delete(p)
+    db.commit()
+    return None
+
 @router.post("/{project_id}/architectures", response_model=ArchitectureOut, status_code=201)
 def create_architecture(project_id: UUID, body: ArchitectureCreate, db: Session=Depends(get_db), user=Depends(current_user)):
     p=get_project_or_404(db,project_id,user.id); can_write(db,p,user.id)
     layers=body.config.get("layers",[])
-    if not layers or len(layers)>100: from fastapi import HTTPException; raise HTTPException(422,"La arquitectura debe tener entre 1 y 100 capas")
+    if not layers or len(layers)>100: raise HTTPException(422,"La arquitectura debe tener entre 1 y 100 capas")
     a=Architecture(project_id=project_id,name=body.name,family=body.family,config_json=body.config); db.add(a); db.commit(); db.refresh(a); return a
 
 @router.get("/{project_id}/architectures", response_model=list[ArchitectureOut])
@@ -52,6 +62,5 @@ def list_models(project_id: UUID, db: Session=Depends(get_db), user=Depends(curr
 
 @router.get("/{project_id}/audit-events")
 def audit_events(project_id: UUID, db: Session=Depends(get_db), user=Depends(current_user)):
-    from app.models import AuditEvent
     get_project_or_404(db,project_id,user.id)
     return db.execute(select(AuditEvent).where(AuditEvent.project_id==project_id).order_by(AuditEvent.created_at.desc()).limit(200)).scalars().all()

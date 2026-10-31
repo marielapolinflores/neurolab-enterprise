@@ -219,6 +219,12 @@ export const api = {
     return request<BackendProject>(`/projects/${projectId}`)
   },
 
+  async deleteProject(projectId: string): Promise<void> {
+    return request<void>(`/projects/${projectId}`, {
+      method: 'DELETE',
+    })
+  },
+
   // Arquitecturas
   async createArchitecture(
     projectId: string,

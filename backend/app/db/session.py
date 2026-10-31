@@ -4,7 +4,11 @@ from app.core.config import settings
 
 db_url = settings.database_url
 if db_url.startswith("postgresql://"):
-    db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+    try:
+        import psycopg
+        db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+    except ImportError:
+        db_url = db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 engine = create_engine(db_url, pool_pre_ping=True, pool_recycle=1800)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
