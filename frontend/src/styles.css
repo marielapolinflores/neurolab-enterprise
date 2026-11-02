@@ -263,3 +263,574 @@ tbody tr:hover { background: #f8fafc; }
   background: #fee4e2;
 }
 
+
+
+/* =========================================================
+   NEUROLAB ENTERPRISE — ESTILOS ADICIONALES M08, M09, M10
+   Y FLUJO GUIADO (PROYECTO -> DATASET -> RED -> ENTRENAMIENTO)
+   ========================================================= */
+
+/* Workflow Stepper Bar */
+.workflow-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e1e7ef;
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px #10182808;
+}
+.workflow-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #667085;
+  white-space: nowrap;
+  margin-right: 4px;
+}
+.step-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 7px;
+  border: 1px solid #e1e7ef;
+  background: #f8fafc;
+  color: #475467;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.step-chip:hover {
+  background: #eef4ff;
+  border-color: #c7d7fe;
+  color: #285bd4;
+}
+.step-chip.active {
+  background: #285bd4;
+  border-color: #285bd4;
+  color: #ffffff;
+  box-shadow: 0 2px 6px #285bd429;
+}
+.step-chip.done {
+  background: #ecfdf3;
+  border-color: #abefc6;
+  color: #067647;
+}
+.step-chip .step-num {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  background: #e2e8f0;
+  color: #334155;
+}
+.step-chip.active .step-num {
+  background: #ffffff;
+  color: #285bd4;
+}
+.step-chip.done .step-num {
+  background: #12b76a;
+  color: #ffffff;
+}
+.step-arrow {
+  color: #98a2b3;
+  font-size: 11px;
+}
+
+/* Active Project Highlight Banner */
+.active-project-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #f0f5ff;
+  border: 1px solid #c7d7fe;
+  border-radius: 9px;
+  padding: 9px 15px;
+  margin-bottom: 16px;
+  font-size: 11px;
+  color: #1e3a8a;
+}
+.active-project-bar b {
+  color: #172b4d;
+}
+.active-project-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #285bd4;
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+/* Dataset File Upload & Drag-and-Drop Area */
+.file-drop-area {
+  border: 2px dashed #b8c9e8;
+  border-radius: 12px;
+  background: #f8fafc;
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+}
+.file-drop-area:hover, .file-drop-area.drag-active {
+  background: #eef4ff;
+  border-color: #285bd4;
+}
+.file-drop-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #edf3ff;
+  color: #285bd4;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 12px;
+}
+.file-drop-area h4 {
+  font: 700 13px Manrope, sans-serif;
+  color: #182230;
+  margin: 0 0 5px;
+}
+.file-drop-area p {
+  color: #667085;
+  font-size: 10px;
+  margin: 0 0 12px;
+}
+
+/* Dataset Preview Table */
+.dataset-preview-wrap {
+  background: #ffffff;
+  border: 1px solid #e1e7ef;
+  border-radius: 9px;
+  overflow: hidden;
+  margin-top: 14px;
+}
+.dataset-preview-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e1e7ef;
+  font-size: 10px;
+  font-weight: 600;
+  color: #344054;
+}
+.dataset-preview-table-container {
+  max-height: 220px;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+.col-type-badge {
+  font-size: 8px;
+  font-weight: 600;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #eef4ff;
+  color: #285bd4;
+  margin-left: 5px;
+}
+
+/* M08 Model Registry Cards & Badges */
+.registry-status-select {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #d0d8e4;
+  background: #fff;
+  cursor: pointer;
+}
+.registry-status-select.aprobado, .registry-status.aprobado {
+  background: #ecfdf3;
+  color: #027a48;
+  border-color: #a6f4c5;
+}
+.registry-status-select.revisado, .registry-status.revisado {
+  background: #eff8ff;
+  color: #175cd3;
+  border-color: #b2ddff;
+}
+.registry-status-select.borrador, .registry-status.borrador {
+  background: #fff8eb;
+  color: #b54708;
+  border-color: #fedf89;
+}
+.registry-status-select.retirado, .registry-status.retirado {
+  background: #fef3f2;
+  color: #b42318;
+  border-color: #fecdca;
+}
+.hash-pill {
+  font-family: monospace;
+  font-size: 9px;
+  background: #f2f4f7;
+  color: #475467;
+  padding: 3px 6px;
+  border-radius: 4px;
+  border: 1px solid #e1e7ef;
+}
+
+/* Modal Wide */
+.modal.modal-wide {
+  width: min(820px, 95vw);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* M09 Executive Printable Report */
+.executive-report-view {
+  background: #ffffff;
+  border: 1px solid #e1e7ef;
+  border-radius: 12px;
+  padding: 36px 42px;
+  margin-top: 18px;
+  box-shadow: 0 3px 12px #1018280a;
+}
+.report-header-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 22px;
+  border-bottom: 2px solid #285bd4;
+  margin-bottom: 24px;
+}
+.report-company-title {
+  font: 800 21px Manrope, sans-serif;
+  color: #101828;
+  letter-spacing: -0.5px;
+}
+.report-company-sub {
+  font-size: 10px;
+  color: #667085;
+  letter-spacing: 1px;
+  margin-top: 3px;
+}
+.report-meta-box {
+  text-align: right;
+  font-size: 10px;
+  color: #475467;
+  line-height: 1.6;
+}
+.report-section-header {
+  font: 700 13px Manrope, sans-serif;
+  color: #182230;
+  border-left: 3px solid #285bd4;
+  padding-left: 9px;
+  margin: 26px 0 14px;
+}
+.report-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.report-kpi-box {
+  background: #f8fafc;
+  border: 1px solid #e1e7ef;
+  border-radius: 8px;
+  padding: 13px 15px;
+}
+.report-kpi-box small {
+  font-size: 9px;
+  color: #667085;
+  display: block;
+}
+.report-kpi-box b {
+  font: 700 19px Manrope, sans-serif;
+  color: #101828;
+  display: block;
+  margin-top: 4px;
+}
+
+/* Printable Styles */
+@media print {
+  .sidebar, .topbar, .heading-actions, .filter-tabs, .workflow-bar, .modal-backdrop, .toast, .banner-cta {
+    display: none !important;
+  }
+  .main {
+    margin-left: 0 !important;
+    background: #ffffff !important;
+  }
+  .content {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  .executive-report-view {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+}
+
+/* M10 Admin RBAC Table */
+.rbac-table th, .rbac-table td {
+  padding: 9px 12px;
+  font-size: 10px;
+}
+.rbac-check {
+  color: #12b76a;
+  display: grid;
+  place-items: center;
+}
+.rbac-cross {
+  color: #d0d5dd;
+  display: grid;
+  place-items: center;
+}
+
+/* Resource limit control box */
+.resource-control-box {
+  background: #f8fafc;
+  border: 1px solid #e1e7ef;
+  border-radius: 9px;
+  padding: 15px;
+  margin-bottom: 12px;
+}
+.resource-control-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+.resource-control-head b {
+  color: #285bd4;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   PANTALLA DE LOGIN — CREDENCIALES DE ADMINISTRADOR
+   ========================================================= */
+.login-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0b1020 100%);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.login-shell::before {
+  content: "";
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #285bd420 0%, transparent 70%);
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.login-box {
+  width: min(440px, 100%);
+  background: #ffffff;
+  border: 1px solid #d0d8e4;
+  border-radius: 16px;
+  padding: 36px 32px;
+  box-shadow: 0 20px 60px #0000002e;
+  position: relative;
+  z-index: 2;
+}
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.login-brand-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #285bd4, #7656c9);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 14px #285bd438;
+}
+.login-brand h2 {
+  font: 800 20px Manrope, sans-serif;
+  color: #101828;
+  margin: 0;
+}
+.login-brand span {
+  font-size: 10px;
+  color: #667085;
+  letter-spacing: 0.8px;
+  display: block;
+  margin-top: 2px;
+}
+.login-header h3 {
+  font: 700 16px Manrope, sans-serif;
+  color: #182230;
+  margin: 0 0 6px;
+}
+.login-header p {
+  font-size: 11px;
+  color: #667085;
+  margin: 0 0 22px;
+}
+.admin-credentials-card {
+  background: #f0f5ff;
+  border: 1px solid #c7d7fe;
+  border-radius: 10px;
+  padding: 13px 15px;
+  margin-bottom: 20px;
+  font-size: 11px;
+}
+.admin-credentials-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #1e3a8a;
+  font-weight: 700;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+.admin-credentials-header span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.admin-cred-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #344054;
+  margin: 4px 0;
+  font-size: 10px;
+}
+.admin-cred-row code {
+  background: #ffffff;
+  border: 1px solid #d0d8e4;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 600;
+  color: #285bd4;
+}
+.one-click-admin-btn {
+  width: 100%;
+  margin-top: 10px;
+  background: #285bd4;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.one-click-admin-btn:hover {
+  background: #1f4bb5;
+}
+
+/* =========================================================
+   PANEL DE VISUALIZACIÓN PREVIA DE LA DATA (DATA PROFILING)
+   ========================================================= */
+.data-preview-panel {
+  background: #ffffff;
+  border: 1px solid #e1e7ef;
+  border-radius: 12px;
+  padding: 22px 24px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px #10182806;
+}
+.data-preview-titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.data-preview-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.data-stat-card {
+  background: #f8fafc;
+  border: 1px solid #e1e7ef;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.data-stat-card small {
+  font-size: 9px;
+  color: #667085;
+  display: block;
+}
+.data-stat-card b {
+  font: 700 16px Manrope, sans-serif;
+  color: #101828;
+  display: block;
+  margin-top: 3px;
+}
+.data-table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 10px;
+}
+.data-table-wrap {
+  border: 1px solid #e1e7ef;
+  border-radius: 8px;
+  overflow-x: auto;
+  max-height: 380px;
+}
+.data-table-wrap table {
+  margin: 0;
+}
+.data-table-wrap th {
+  background: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 1px 0 #e1e7ef;
+}
+.col-header-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.col-header-cell small {
+  font-size: 8px;
+  font-weight: 500;
+  color: #98a2b3;
+}
+.target-col-highlight {
+  background: #ecfdf3 !important;
+  color: #027a48 !important;
+  font-weight: 700;
+}
+.data-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 10px;
+  color: #667085;
+}
