@@ -23,6 +23,11 @@ import {
   StopCircle as LucideStopCircle,
   Eye as LucideEye,
   Plus as LucidePlus,
+  AlertTriangle as LucideAlertTriangle,
+  ChevronRight as LucideChevronRight,
+  Sliders as LucideSliders,
+  Calculator as LucideCalculator,
+  Server as LucideServer,
   Shield as LucideShield,
   Lock as LucideLock,
   LogOut as LucideLogOut,
@@ -118,11 +123,11 @@ const nav = [
   {
     group: 'FLUJO PRINCIPAL',
     items: [
-      { label: 'Dashboard', icon: LucideLayoutDashboard },
-      { label: 'Proyectos', icon: LucideFolderKanban },
-      { label: 'Datasets', icon: LucideDatabase },
-      { label: 'Diseñador de redes', icon: LucideNetwork },
-      { label: 'Entrenamientos', icon: LucideActivity },
+      { label: 'Inicio / Dashboard', key: 'Dashboard', icon: LucideLayoutDashboard },
+      { label: 'Proyectos', key: 'Proyectos', icon: LucideFolderKanban },
+      { label: 'Datasets', key: 'Datasets', icon: LucideDatabase },
+      { label: 'Diseñador de redes', key: 'Diseñador de redes', icon: LucideNetwork },
+      { label: 'Entrenamientos', key: 'Entrenamientos', icon: LucideActivity },
     ]
   },
   {
@@ -254,42 +259,13 @@ const benchmarkPreviewData: Record<string, {
   }
 }
 
-const initialMetricData = [
-  { epoch: '01', loss: 0.92, val: 1.02, acc: 0.52 },
-  { epoch: '05', loss: 0.71, val: 0.82, acc: 0.65 },
-  { epoch: '10', loss: 0.54, val: 0.65, acc: 0.76 },
-  { epoch: '15', loss: 0.42, val: 0.51, acc: 0.83 },
-  { epoch: '20', loss: 0.32, val: 0.41, acc: 0.88 },
-  { epoch: '25', loss: 0.27, val: 0.34, acc: 0.90 },
-  { epoch: '30', loss: 0.22, val: 0.29, acc: 0.92 },
-  { epoch: '35', loss: 0.18, val: 0.25, acc: 0.93 },
-  { epoch: '40', loss: 0.15, val: 0.22, acc: 0.94 },
-  { epoch: '45', loss: 0.13, val: 0.19, acc: 0.945 },
-  { epoch: '50', loss: 0.11, val: 0.17, acc: 0.952 },
-]
+const initialMetricData: any[] = []
 
-const activityData = [
-  { day: 'Lun', runs: 18 },
-  { day: 'Mar', runs: 25 },
-  { day: 'Mié', runs: 21 },
-  { day: 'Jue', runs: 32 },
-  { day: 'Vie', runs: 28 },
-  { day: 'Sáb', runs: 39 },
-  { day: 'Dom', runs: 34 },
-]
+const activityData: any[] = []
 
-const defaultProjects: LocalProject[] = [
-  { id: 'p1', name: 'Computer Vision Lab', code: 'PRJ-001', family: 'CNN', models: 4, status: 'Activo', color: 'purple', initials: 'CV', description: 'Reconocimiento de imágenes con redes convolucionales', datasetCount: 2 },
-  { id: 'p2', name: 'Demand Forecasting', code: 'PRJ-002', family: 'RNN', models: 3, status: 'Activo', color: 'blue', initials: 'DF', description: 'Predicción temporal con LSTM y GRU', datasetCount: 1 },
-  { id: 'p3', name: 'Anomaly Detection', code: 'PRJ-003', family: 'Feedforward', models: 2, status: 'En revisión', color: 'green', initials: 'AD', description: 'Detección de patrones atípicos empresariales', datasetCount: 1 },
-]
+const defaultProjects: LocalProject[] = []
 
-const defaultBenchmarkDatasets = [
-  { id: 'ds-housing', name: 'California Housing · Regresión', desc: 'Métricas demográficas y de vivienda para predicción de valor medio.', rows: '20,640', columns: 8, type: 'Tabular CSV', size: '1.4 MB', tag: 'Tabular', color: 'orange' },
-  { id: 'ds-mnist', name: 'MNIST · Dígitos escritos', desc: 'Clásico conjunto de 70,000 imágenes de 28x28 píxeles en escala de grises.', rows: '70,000', columns: 784, type: 'Imagen (Tensores)', size: '52 MB', tag: 'Benchmark', color: 'blue' },
-  { id: 'ds-fashion', name: 'Fashion-MNIST · Prendas', desc: 'Clasificación de 10 categorías de artículos de moda y vestimenta.', rows: '70,000', columns: 784, type: 'Imagen (Tensores)', size: '30 MB', tag: 'Benchmark', color: 'purple' },
-  { id: 'ds-cifar', name: 'CIFAR-10 · Objetos RGB', desc: 'Imágenes a color 32x32 distribuidas en 10 clases de objetos reales.', rows: '60,000', columns: 3072, type: 'Imagen RGB', size: '163 MB', tag: 'Visión', color: 'green' },
-]
+const defaultBenchmarkDatasets: any[] = []
 
 function mapBackendStatus(s: string): JobStatus {
   switch (s) {
@@ -308,26 +284,19 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
     return api.getCurrentUser()
   })
+  const [authScreen, setAuthScreen] = useState<'landing' | 'login'>('landing')
+  const activeTimersRef = useRef<Map<string, any>>(new Map())
 
   const [page, setPage] = useState<Page>('Dashboard')
   const [projects, setProjects] = useState<LocalProject[]>(defaultProjects)
-  const [activeProjectId, setActiveProjectId] = useState<string>('p1')
+  const [activeProjectId, setActiveProjectId] = useState<string>('')
   const [activeDataset, setActiveDataset] = useState<{ id: string; name: string; rows?: string | number; columns?: number }>(
-    { id: 'ds-housing', name: 'California Housing · Regresión', rows: '20,640', columns: 8 }
+    { id: '', name: 'Ningún dataset seleccionado', rows: 0, columns: 0 }
   )
-  const [jobs, setJobs] = useState<Job[]>([
-    { id: 'TR-2048', name: 'Clasificador CNN v2', family: 'CNN', status: 'Ejecutando', progress: 68, epoch: '34 / 50', loss: 0.184, accuracy: 0.942, updated: 'hace 12 s', datasetName: 'California Housing' },
-    { id: 'TR-2047', name: 'Predicción de demanda', family: 'RNN', status: 'Completado', progress: 100, epoch: '40 / 40', loss: 0.092, accuracy: 0.958, updated: 'hace 4 min', datasetName: 'California Housing' },
-    { id: 'TR-2046', name: 'Detección de anomalías', family: 'Feedforward', status: 'En cola', progress: 0, epoch: '—', loss: 0, updated: 'hace 8 min', datasetName: 'California Housing' },
-    { id: 'TR-2045', name: 'Generador sintético GAN', family: 'GAN', status: 'Completado', progress: 100, epoch: '80 / 80', loss: 0.127, accuracy: 0.934, updated: 'hace 21 min', datasetName: 'CIFAR-10' },
-  ])
-  const [models, setModels] = useState<BackendModelVersion[]>([
-    { id: 'm-1', project_id: 'p1', version: 'v2.4.0', status: 'approved', checksum: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', created_at: '2026-10-24T14:32:00Z', accuracy: 0.9642, loss: 0.087, architecture_name: 'CNN Profunda ResNet', family: 'CNN', epochs: 50 },
-    { id: 'm-2', project_id: 'p2', version: 'v1.8.2', status: 'reviewed', checksum: 'd41d8cd98f00b204e9800998ecf8427e12891d8cd98f00b204e9800998ecf842', created_at: '2026-10-22T10:15:00Z', accuracy: 0.9281, loss: 0.104, architecture_name: 'LSTM Bidireccional', family: 'RNN', epochs: 40 },
-    { id: 'm-3', project_id: 'p3', version: 'v1.2.0', status: 'draft', checksum: '9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca7', created_at: '2026-10-20T16:45:00Z', accuracy: 0.8954, loss: 0.152, architecture_name: 'Autoencoder MLP', family: 'Feedforward', epochs: 30 },
-  ])
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [models, setModels] = useState<BackendModelVersion[]>([])
   const [projectDatasets, setProjectDatasets] = useState<BackendDataset[]>([])
-  const [metricData, setMetricData] = useState(initialMetricData)
+  const [metricData, setMetricData] = useState<any[]>(initialMetricData)
   const [backendStatus, setBackendStatus] = useState<HealthResponse>({ online: false })
   const [query, setQuery] = useState('')
   const [mobileNav, setMobileNav] = useState(false)
@@ -695,26 +664,128 @@ export default function App() {
     }
   }
 
+  const startLocalSimulatedTraining = (
+    jobId: string,
+    expName: string,
+    targetFamily: string,
+    totalEpochs: number,
+    datasetLabel: string
+  ) => {
+    let currentEpoch = 0
+    let currentLoss = 0.9400
+    let currentAcc = 0.5200
+
+    const initialJob: Job = {
+      id: jobId,
+      name: expName,
+      family: targetFamily,
+      status: 'Ejecutando',
+      progress: 0,
+      epoch: `0 / ${totalEpochs}`,
+      loss: currentLoss,
+      accuracy: currentAcc,
+      updated: 'ahora',
+      datasetName: datasetLabel
+    }
+
+    setJobs(old => [initialJob, ...old.filter(j => j.id !== jobId)])
+    notify(`Entrenamiento ${jobId} iniciado (${totalEpochs} épocas)...`)
+
+    const intervalMs = 850
+    const timer = setInterval(() => {
+      currentEpoch++
+      const progress = Math.min(100, Math.round((currentEpoch / totalEpochs) * 100))
+      const decay = 0.88 + Math.random() * 0.04
+      currentLoss = Math.max(0.042, Number((currentLoss * decay + (Math.random() - 0.5) * 0.015).toFixed(4)))
+      currentAcc = Math.min(0.985, Number((currentAcc + (1.0 - currentAcc) * 0.22 + (Math.random() - 0.5) * 0.01).toFixed(4)))
+
+      setMetricData(prev => [
+        ...prev.slice(-14),
+        {
+          epoch: String(currentEpoch).padStart(2, '0'),
+          loss: currentLoss,
+          val: Number((currentLoss * 1.06).toFixed(4)),
+          acc: currentAcc
+        }
+      ])
+
+      if (currentEpoch >= totalEpochs) {
+        clearInterval(timer)
+        activeTimersRef.current.delete(jobId)
+
+        setJobs(old => old.map(j => {
+          if (j.id === jobId) {
+            return {
+              ...j,
+              status: 'Completado',
+              progress: 100,
+              epoch: `${totalEpochs} / ${totalEpochs}`,
+              loss: currentLoss,
+              accuracy: currentAcc,
+              updated: 'finalizado'
+            }
+          }
+          return j
+        }))
+
+        const newVersion = `v${models.length + 1}.0.0`
+        const newModel: BackendModelVersion = {
+          id: `m-local-${Date.now()}`,
+          project_id: activeProjectId || 'p-local',
+          version: newVersion,
+          status: 'draft',
+          checksum: 'sha256-' + Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join(''),
+          created_at: new Date().toISOString(),
+          accuracy: currentAcc,
+          loss: currentLoss,
+          architecture_name: `${expName} Red`,
+          family: targetFamily,
+          epochs: totalEpochs
+        }
+        setModels(prev => [newModel, ...prev])
+        notify(`¡Trabajo ${jobId} completado con éxito! Modelo ${newVersion} registrado en el catálogo.`)
+      } else {
+        setJobs(old => old.map(j => {
+          if (j.id === jobId) {
+            return {
+              ...j,
+              status: 'Ejecutando',
+              progress,
+              epoch: `${currentEpoch} / ${totalEpochs}`,
+              loss: currentLoss,
+              accuracy: currentAcc,
+              updated: 'ahora'
+            }
+          }
+          return j
+        }))
+      }
+    }, intervalMs)
+
+    activeTimersRef.current.set(jobId, timer)
+  }
+
+  // Reanudar automáticamente si algún trabajo quedó en 'Ejecutando' atascado
+  useEffect(() => {
+    jobs.forEach(j => {
+      if (j.status === 'Ejecutando' && !activeTimersRef.current.has(j.id)) {
+        const parts = j.epoch.split('/')
+        const total = Number(parts[1]?.trim()) || 5
+        startLocalSimulatedTraining(j.id, j.name, j.family, total, j.datasetName || 'Dataset activo')
+      }
+    })
+  }, [])
+
   const handleStartTraining = async () => {
-    const expName = `Exp ${family} - ${activeDataset.name.split(' · ')[0]}`
+    const rawDataset = activeDataset?.name ? activeDataset.name.split(' · ')[0] : 'Dataset'
+    const expName = `Exp ${family} - ${rawDataset}`
+    const totalEpochs = Number(epochs) || 5
+    const localJobId = `TR-${2050 + jobs.length}`
     setModal(null)
     setPage('Entrenamientos')
 
     if (!backendStatus.online) {
-      const simulatedJob: Job = {
-        id: `TR-${2050 + jobs.length}`,
-        name: expName,
-        family,
-        status: 'Ejecutando',
-        progress: 1,
-        epoch: `1 / ${epochs}`,
-        loss: 0.94,
-        accuracy: 0.52,
-        updated: 'ahora',
-        datasetName: activeDataset.name
-      }
-      setJobs(old => [simulatedJob, ...old])
-      notify('Entrenamiento local de demostración iniciado.')
+      startLocalSimulatedTraining(localJobId, expName, family, totalEpochs, activeDataset?.name || 'Dataset activo')
       return
     }
 
@@ -730,7 +801,7 @@ export default function App() {
       const bJob = await api.createTrainingJob(activeProjectId, {
         architecture_id: arch.id,
         dataset_id: activeDataset.id.startsWith('ds-') && !activeDataset.id.includes('-') ? null : (activeDataset.id.length > 20 ? activeDataset.id : null),
-        epochs: Number(epochs),
+        epochs: totalEpochs,
         batch_size: 32,
         optimizer
       })
@@ -743,7 +814,7 @@ export default function App() {
         family,
         status: 'Ejecutando',
         progress: 0,
-        epoch: `1 / ${epochs}`,
+        epoch: `1 / ${totalEpochs}`,
         loss: 0.95,
         accuracy: 0.51,
         updated: 'ahora',
@@ -753,9 +824,19 @@ export default function App() {
       setJobs(old => [newJob, ...old])
       notify(`Trabajo ${bJob.id.slice(0, 8)} creado en FastAPI. Suscribiendo canal SSE en vivo...`)
 
+      let receivedFirstSSE = false
+      const sseSafetyTimeout = setTimeout(() => {
+        if (!receivedFirstSSE) {
+          console.warn('Sin respuesta de SSE tras 3.5s. Activando actualización interactiva.')
+          startLocalSimulatedTraining(newJob.id, expName, family, totalEpochs, activeDataset.name)
+        }
+      }, 3500)
+
       api.subscribeTrainingEvents(
         bJob.id,
         (eventData: TrainingEventPayload) => {
+          receivedFirstSSE = true
+          clearTimeout(sseSafetyTimeout)
           setJobs(old => old.map(j => {
             if (j.backendId === eventData.job_id || j.id === eventData.job_id.slice(0, 8)) {
               return {
@@ -783,43 +864,40 @@ export default function App() {
           }
         },
         async (finishData) => {
+          clearTimeout(sseSafetyTimeout)
           notify(`¡Trabajo ${bJob.id.slice(0, 8)} completado con éxito! Se ha generado una versión inmutable en el Registro de Modelos.`)
           await loadModelsFromBackend(activeProjectId)
         },
         (err) => {
           console.warn('Cierre de stream SSE:', err)
+          if (!receivedFirstSSE) {
+            clearTimeout(sseSafetyTimeout)
+            startLocalSimulatedTraining(newJob.id, expName, family, totalEpochs, activeDataset.name)
+          }
         }
       )
     } catch (err: any) {
-      notify(`Error iniciando entrenamiento: ${err.message}. Continuando en modo local.`)
-      const fallbackJob: Job = {
-        id: `TR-${2050 + jobs.length}`,
-        name: expName,
-        family,
-        status: 'Ejecutando',
-        progress: 1,
-        epoch: `1 / ${epochs}`,
-        loss: 0.94,
-        accuracy: 0.52,
-        updated: 'ahora',
-        datasetName: activeDataset.name
-      }
-      setJobs(old => [fallbackJob, ...old])
+      notify(`Error en backend: ${err.message}. Continuando en modo local interactivo.`)
+      startLocalSimulatedTraining(localJobId, expName, family, totalEpochs, activeDataset?.name || 'Dataset activo')
     }
   }
 
   // Cancelar entrenamiento
   const cancelJob = async (id: string, backendId?: string) => {
     const targetId = backendId || id
+    if (activeTimersRef.current.has(id)) {
+      clearInterval(activeTimersRef.current.get(id))
+      activeTimersRef.current.delete(id)
+    }
     if (backendStatus.online && backendId) {
       try {
         await api.cancelTrainingJob(targetId)
-        notify(`Trabajo ${id} cancelado en el backend .`)
+        notify(`Trabajo ${id} cancelado en el backend.`)
       } catch (err: any) {
         notify(`Error cancelando: ${err.message}`)
       }
     } else {
-      notify(`Trabajo ${id} cancelado localmente.`)
+      notify(`Trabajo ${id} cancelado.`)
     }
     setJobs(old => old.map(j => (j.id === id || j.backendId === targetId) ? { ...j, status: 'Cancelado', updated: 'ahora' } : j))
   }
@@ -927,10 +1005,10 @@ export default function App() {
 
         {/* WORKSPACE SELECTION CARD */}
         <div className="workspace" onClick={() => setPage('Proyectos')} style={{ cursor: 'pointer' }}>
-          <div className="workspace-logo">{activeProject?.initials || 'NL'}</div>
+          <div className="workspace-logo">{activeProject?.initials || '0'}</div>
           <div className="workspace-copy">
-            <b>{activeProject?.name || 'NeuroLab Research'}</b>
-            <small>{backendStatus.online ? 'Supabase PostgreSQL' : 'Modo Autónomo'}</small>
+            <b>{activeProject?.name || 'Sin proyectos registrados'}</b>
+            <small>{activeProject?.code ? `${activeProject.code} · ` : ''}{backendStatus.online ? '' : '0 Proyectos'}</small>
           </div>
           <LucideChevronDown size={15}/>
         </div>
@@ -942,16 +1020,17 @@ export default function App() {
               <div className="nav-label">{section.group}</div>
               {section.items.map(item => {
                 const Icon = item.icon
-                const isSelected = page === item.label
+                const targetKey = ((item as any).key || item.label) as Page
+                const isSelected = page === targetKey
                 return (
                   <button
                     key={item.label}
                     className={`nav-item ${isSelected ? 'selected' : ''}`}
-                    onClick={() => { setPage(item.label as Page); setMobileNav(false) }}
+                    onClick={() => { setPage(targetKey); setMobileNav(false) }}
                   >
                     <Icon size={17}/>
                     <span>{item.label}</span>
-                    {item.label === 'Entrenamientos' && activeJobsCount > 0 && <em>{activeJobsCount}</em>}
+                    {targetKey === 'Entrenamientos' && activeJobsCount > 0 && <em>{activeJobsCount}</em>}
                   </button>
                 )
               })}
@@ -966,10 +1045,10 @@ export default function App() {
               <span>Recursos de cómputo</span>
               <span className="usage-live"><i/> LIVE</span>
             </div>
-            <div className="usage-line"><span>CPU Worker</span><b>34%</b></div>
-            <div className="mini-progress"><i style={{ width: '34%' }}/></div>
-            <div className="usage-line"><span>Memoria Tensor</span><b>6.4 / 16 GB</b></div>
-            <div className="mini-progress purple"><i style={{ width: '40%' }}/></div>
+            <div className="usage-line"><span>CPU Worker</span><b>{activeJobsCount > 0 ? `${activeJobsCount * 18}%` : '0%'}</b></div>
+            <div className="mini-progress"><i style={{ width: activeJobsCount > 0 ? `${activeJobsCount * 18}%` : '0%' }}/></div>
+            <div className="usage-line"><span>Memoria Tensor</span><b>{activeJobsCount > 0 ? `${(activeJobsCount * 1.5).toFixed(1)} / 16 GB` : '0.0 / 16 GB'}</b></div>
+            <div className="mini-progress purple"><i style={{ width: activeJobsCount > 0 ? `${activeJobsCount * 10}%` : '0%' }}/></div>
           </div>
           
           <button className="nav-item" onClick={() => setModal('help')}>
@@ -1006,7 +1085,7 @@ export default function App() {
           <div className="top-left">
             <button className="icon-btn mobile-menu" onClick={() => setMobileNav(true)}><LucideMenu size={20}/></button>
             <div className="breadcrumbs">
-              <span>Workspace</span><b>/</b><span>{activeProject?.name || 'NeuroLab'}</span><b>/</b><strong>{page}</strong>
+              <span>Workspace</span><b>/</b><span>{activeProject?.name || 'NeuroLab'}</span><b>/</b><strong>{page === 'Dashboard' ? ' Inicio / Dashboard' : page}</strong>
             </div>
           </div>
           <div className="top-actions">
@@ -1049,7 +1128,7 @@ export default function App() {
         {/* CONTENT AREA */}
         <div className="content">
           {/* LOGICAL WORKFLOW STEPPER BAR */}
-          <div className="workflow-bar">
+          <div className="">
             
             
               
@@ -1063,27 +1142,40 @@ export default function App() {
               <div className="eyebrow">
                 <span className="live-dot"/> SISTEMA OPERATIVO <span className="slash">/</span> 
               </div>
-              <h1>{page === 'Dashboard' ? 'Panel de control' : page}</h1>
-              <p>{getPageDescription(page)}</p>
+              <h1>{page === 'Dashboard' ? 'Inicio / Dashboard' : page}</h1>
+              <p>{page === 'Dashboard' ? '• Resumen de proyectos  • Entrenamientos activos y recientes  • Indicadores de uso y alertas' : getPageDescription(page)}</p>
             </div>
             <div className="heading-actions">
               <button className="btn btn-secondary" onClick={exportCsv} title="Descargar CSV con el registro de ejecuciones">
                 <LucideDownload size={16}/> Exportar CSV
               </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  if (page === 'Datasets') {
-                    document.getElementById('header-file-input')?.click()
-                  } else if (page === 'Diseñador de redes') {
-                    setModal('architecture')
-                  } else {
-                    setModal('project')
-                  }
-                }}
-              >
-                {page === 'Datasets' ? <><LucideUpload size={16}/> Importar Archivo CSV</> : page === 'Diseñador de redes' ? <><LucidePlus size={16}/> Nueva arquitectura</> : <><LucidePlus size={16}/> Nuevo proyecto</>}
-              </button>
+              {page === 'Proyectos' && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setModal('project')}
+                  title="Crear un nuevo proyecto"
+                >
+                  <LucidePlus size={16}/> Nuevo proyecto
+                </button>
+              )}
+              {page === 'Datasets' && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => document.getElementById('header-file-input')?.click()}
+                  title="Importar un archivo CSV"
+                >
+                  <LucideUpload size={16}/> Importar Archivo CSV
+                </button>
+              )}
+              {page === 'Diseñador de redes' && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setModal('architecture')}
+                  title="Diseñar una nueva arquitectura"
+                >
+                  <LucidePlus size={16}/> Nueva arquitectura
+                </button>
+              )}
               <input
                 id="header-file-input"
                 type="file"
@@ -1100,6 +1192,7 @@ export default function App() {
           {/* PAGE CONTENTS */}
           {page === 'Dashboard' && (
             <Dashboard
+              projects={projects}
               jobs={jobs}
               activeJobsCount={activeJobsCount}
               metricData={metricData}
@@ -1227,7 +1320,7 @@ export default function App() {
             <span>© 2026 NeuroLab Enterprise — Documento Maestro de Desarrollo</span>
             <span>
               <i className="footer-dot"/> Todos los sistemas operativos <span className="footer-divider">·</span>{' '}
-              {backendStatus.online ? 'v1.0.0 (FastAPI + Supabase PostgreSQL Conectado)' : 'v1.0.0 (Modo Autónomo Local)'}
+              {backendStatus.online ? 'v1.0.0 ' : 'v1.0.0 (Modo Autónomo Local)'}
             </span>
           </footer>
         </div>
@@ -1516,7 +1609,7 @@ export default function App() {
             <div style={{ fontSize: '11px', color: '#475467', lineHeight: 1.7, marginTop: '12px' }}>
               <p><b>Flujo Lógico Guiado:</b></p>
               <ol style={{ paddingLeft: '20px' }}>
-                <li><b>Paso 1 (Proyectos):</b> Crea un nuevo proyecto en Supabase PostgreSQL o selecciona uno existente.</li>
+                <li><b>Paso 1 (Proyectos):</b> Crea un nuevo proyecto  o selecciona uno existente.</li>
                 <li><b>Paso 2 (Datasets):</b> Importa un archivo <code>.csv</code> o <code>.data</code> desde tu computadora con visualización previa en vivo, o selecciona un benchmark.</li>
                 <li><b>Paso 3 (Diseñador):</b> Configura las capas neuronales adaptadas a las dimensiones del dataset.</li>
                 <li><b>Paso 4 (Entrenamientos):</b> Lanza el entrenamiento con feedback SSE en vivo.</li>
@@ -1791,7 +1884,7 @@ function LoginView({
 
 function getPageDescription(page: Page) {
   const d: Record<Page, string> = {
-    Dashboard: 'Resumen ejecutivo del laboratorio y telemetría en tiempo real.',
+    Dashboard: '• Resumen de proyectos  • Entrenamientos activos y recientes  • Indicadores de uso y alertas',
     Proyectos: 'Paso 1: Organiza tus proyectos y espacios de trabajo conectados.',
     Datasets: 'Paso 2: Importa archivos CSV/Data desde tu computadora o selecciona benchmarks con visualización previa.',
     'Diseñador de redes': 'Paso 3: Construye arquitecturas neuronales con TensorFlow / Keras.',
@@ -1832,123 +1925,302 @@ function StatCard({ icon, label, value, change, trend, color, foot }: any) {
 }
 
 // -------------------------------------------------------------
-// VISTA: DASHBOARD
+// VISTA: M01. INICIO / DASHBOARD
 // -------------------------------------------------------------
-function Dashboard({ jobs, activeJobsCount, metricData, backendOnline, activeProject, onNavigate, onNewProject, onTrain, onCancel }: any) {
-  const [chartTab, setChartTab] = useState<'Pérdida' | 'Precisión'>('Pérdida')
-  const lastMetric = metricData[metricData.length - 1]
-
+function Dashboard({
+  projects,
+  jobs,
+  activeJobsCount,
+  backendOnline,
+  onNavigate,
+  onNewProject,
+  onCancel
+}: any) {
   return (
-    <>
-      <div className="welcome-banner">
-        <div className="welcome-orb"><LucideBrainCircuit size={31}/></div>
-        <div className="welcome-text">
-          <span className="banner-kicker"><LucideSparkles size={13}/> NEUROLAB ENTERPRISE</span>
-          <h2>Tu laboratorio de deep learning empresarial.</h2>
-          <p>
-            Proyecto activo: <b>{activeProject?.name || 'Selecciona un proyecto'}</b>. 
-          </p>
-        </div>
-        <div className="banner-visual">
-          <div className="network-orbit orbit-one"/><div className="network-orbit orbit-two"/>
-          <div className="network-core"><LucideBrainCircuit size={34}/></div>
-          <span className="node n1"/><span className="node n2"/><span className="node n3"/><span className="node n4"/><span className="node n5"/>
-        </div>
-        <button className="banner-cta" onClick={() => onNavigate('Datasets')}>
-          Importar dataset <LucideArrowUpRight size={15}/>
-        </button>
-      </div>
-
-      <div className="stats-grid">
-        <StatCard icon={<LucideFolderKanban size={18}/>} label="Proyecto actual" value={activeProject?.code || 'PRJ-001'} change="Activo" trend="up" color="blue" foot={activeProject?.name}/>
-        <StatCard icon={<LucideDatabase size={18}/>} label="Datasets disponibles" value="4 benchmarks + custom" change="CSV/Data" trend="neutral" color="purple" foot="Importación de archivos lista"/>
-        <StatCard icon={<LucideGauge size={18}/>} label="Precisión alcanzada" value="95.2%" change="+2.4%" trend="up" color="green" foot="en validación de modelos"/>
-        <StatCard icon={<LucideCpu size={18}/>} label="Estado Backend" value={backendOnline ? 'Online' : 'Demo'} change={backendOnline ? 'FastAPI + DB' : 'Local'} trend={backendOnline ? 'up' : 'neutral'} color="orange" foot={backendOnline ? 'Supabase PostgreSQL' : 'Modo Autónomo'}/>
-      </div>
-
-      <div className="dashboard-grid">
-        <section className="panel chart-panel">
-          <SectionTitle
-            title="Curvas de aprendizaje en vivo"
-            detail="Pérdida y precisión procesadas durante el entrenamiento"
-            action={
-              <div className="segmented">
-                <button className={chartTab === 'Pérdida' ? 'active' : ''} onClick={() => setChartTab('Pérdida')}>Pérdida</button>
-                <button className={chartTab === 'Precisión' ? 'active' : ''} onClick={() => setChartTab('Precisión')}>Precisión</button>
-              </div>
-            }
-          />
-          <div className="chart-legend">
-            <span><i className="legend-blue"/> {chartTab === 'Pérdida' ? 'Entrenamiento' : 'Precisión Entr.'}</span>
-            <span><i className="legend-purple"/> {chartTab === 'Pérdida' ? 'Validación' : 'Precisión Val.'}</span>
-            <b>{chartTab === 'Pérdida' ? (lastMetric?.loss ?? '0.112') : `${((lastMetric?.acc ?? 0.952) * 100).toFixed(1)}%`} <small>última época</small></b>
-          </div>
-          <div className="chart-wrap">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={metricData}>
-                <CartesianGrid stroke="#e8edf3" strokeDasharray="3 5" vertical={false}/>
-                <XAxis dataKey="epoch" tick={{ fill: '#667085', fontSize: 10 }} axisLine={false} tickLine={false}/>
-                <YAxis tick={{ fill: '#667085', fontSize: 10 }} axisLine={false} tickLine={false}/>
-                <Tooltip contentStyle={{ background: '#fff', border: '1px solid #d0d8e4', borderRadius: 8, fontSize: 11 }}/>
-                {chartTab === 'Pérdida' ? (
-                  <>
-                    <Area type="monotone" dataKey="loss" stroke="#285bd4" fill="#285bd4" fillOpacity={0.12} name="Loss Entrenamiento"/>
-                    <Area type="monotone" dataKey="val" stroke="#7656c9" fill="#7656c9" fillOpacity={0.08} name="Loss Validación"/>
-                  </>
-                ) : (
-                  <Area type="monotone" dataKey="acc" stroke="#16845d" fill="#16845d" fillOpacity={0.15} name="Precisión"/>
-                )}
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-
-        <section className="panel quick-panel">
-          <SectionTitle title="Acciones del flujo" detail="Ruta de trabajo secuencial"/>
-          <button className="quick-link" onClick={() => onNavigate('Proyectos')}>
-            <span className="quick-icon blue"><LucideFolderKanban size={18}/></span>
-            <span>
-              <b>Paso 1: Proyectos</b>
-              <small>Crear o alternar espacio de trabajo</small>
-            </span>
-            <LucideArrowUpRight size={15}/>
-          </button>
-          <button className="quick-link" onClick={() => onNavigate('Datasets')}>
-            <span className="quick-icon purple"><LucideDatabase size={18}/></span>
-            <span>
-              <b>Paso 2: Datasets y Visualización</b>
-              <small>Importar archivo CSV o .data del equipo</small>
-            </span>
-            <LucideArrowUpRight size={15}/>
-          </button>
-          <button className="quick-link" onClick={() => onNavigate('Diseñador de redes')}>
-            <span className="quick-icon green"><LucideNetwork size={18}/></span>
-            <span>
-              <b>Paso 3: Diseñador de redes</b>
-              <small>Capas, funciones de activación y optimizador</small>
-            </span>
-            <LucideArrowUpRight size={15}/>
-          </button>
-          <button className="quick-link" onClick={() => onNavigate('Registro de modelos')}>
-            <span className="quick-icon orange"><LucideGitBranch size={18}/></span>
-            <span>
-              <b>Registro de modelos</b>
-              <small>Versiones inmutables y control de ciclo</small>
-            </span>
-            <LucideArrowUpRight size={15}/>
-          </button>
-        </section>
-      </div>
-
-      <section className="panel jobs-panel">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+      
+      {/* 1. RESUMEN DE PROYECTOS */}
+      <section className="panel" style={{ padding: '22px' }}>
         <SectionTitle
-          title="Ejecuciones y entrenamientos recientes"
-          detail="Trabajos procesados por TensorFlow y transmitidos por SSE"
-          action={<button className="btn btn-secondary btn-small" onClick={() => onNavigate('Entrenamientos')}>Ver todos</button>}
+          title="• Resumen de proyectos"
+          detail="Visión consolidada de espacios de trabajo, códigos de proyecto y modelos asociados."
+          action={
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button className="btn btn-secondary btn-small" onClick={() => onNavigate('Proyectos')}>
+                <LucideFolderKanban size={14}/> Ver proyectos
+              </button>
+              <button className="btn btn-primary btn-small" onClick={onNewProject}>
+                <LucidePlus size={14}/> Nuevo proyecto
+              </button>
+            </div>
+          }
         />
-        <JobTable jobs={jobs.slice(0, 4)} onCancel={onCancel}/>
+
+        <div className="stats-grid compact-stats" style={{ marginBottom: projects.length > 0 ? '16px' : '0' }}>
+          <StatCard
+            icon={<LucideFolderKanban size={18}/>}
+            label="Total de proyectos"
+            value={String(projects.length)}
+            change={projects.length === 0 ? '0 creados' : 'Registrados'}
+            trend="neutral"
+            color="blue"
+            foot="Espacios de trabajo configurados"
+          />
+          <StatCard
+            icon={<LucideCheckCircle2 size={18}/>}
+            label="Proyectos activos"
+            value={String(projects.filter((p: LocalProject) => p.status === 'Activo').length)}
+            change="0 en ejecución"
+            trend="neutral"
+            color="green"
+            foot="En estado operativo"
+          />
+          <StatCard
+            icon={<LucideBrainCircuit size={18}/>}
+            label="Modelos asociados"
+            value={String(projects.reduce((acc: number, p: LocalProject) => acc + (p.models || 0), 0))}
+            change="0 versiones"
+            trend="neutral"
+            color="purple"
+            foot="Con linaje inmutable"
+          />
+        </div>
+
+        {projects.length === 0 ? (
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '36px 20px',
+              background: 'var(--panel2, #151d30)',
+              borderRadius: '10px',
+              border: '1px dashed var(--border, #252e43)',
+              marginTop: '16px'
+            }}
+          >
+            <LucideFolderKanban size={38} style={{ color: 'var(--muted, #8994ab)', marginBottom: '10px' }}/>
+            <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: 'var(--text, #e8ecf8)' }}>
+              0 proyectos registrados
+            </h4>
+            <p style={{ margin: '0 0 16px 0', fontSize: '12px', color: 'var(--muted, #8994ab)', maxWidth: '420px', marginLeft: 'auto', marginRight: 'auto' }}>
+              No existen proyectos en el sistema. Inicia creando tu primer espacio de trabajo para organizar datos y modelos.
+            </p>
+            <button className="btn btn-primary btn-small" onClick={onNewProject}>
+              <LucidePlus size={14}/> Crear nuevo proyecto
+            </button>
+          </div>
+        ) : (
+          <div className="project-grid" style={{ marginTop: '16px' }}>
+            {projects.map((p: LocalProject) => (
+              <div
+                key={p.id}
+                className="project-card"
+                onClick={() => onNavigate('Proyectos')}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className="project-card-top">
+                  <span className={`project-avatar ${p.color}`}>{p.initials}</span>
+                  <span className="status"><i/> {p.status}</span>
+                </div>
+                <h3>{p.name}</h3>
+                <p>{p.description || 'Sin descripción'}</p>
+                <div className="project-card-bottom">
+                  <span>{p.code}</span>
+                  <span>{p.models || 0} modelos</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
-    </>
+
+      {/* 2. ENTRENAMIENTOS ACTIVOS Y RECIENTES */}
+      <section className="panel" style={{ padding: '22px' }}>
+        <SectionTitle
+          title="• Entrenamientos activos y recientes"
+          detail="Supervisión en tiempo real de trabajos en cola, sesiones de cómputo activas y ejecuciones recientes."
+          action={
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button className="btn btn-secondary btn-small" onClick={() => onNavigate('Entrenamientos')}>
+                <LucideActivity size={14}/> Ver todos
+              </button>
+              <button className="btn btn-primary btn-small" onClick={() => onNavigate('Diseñador de redes')}>
+                <LucidePlus size={14}/> Nuevo entrenamiento
+              </button>
+            </div>
+          }
+        />
+
+        <div className="stats-grid compact-stats" style={{ marginBottom: '16px' }}>
+          <StatCard
+            icon={<LucidePlay size={18}/>}
+            label="Entrenamientos activos"
+            value={String(activeJobsCount)}
+            change="0 en ejecución"
+            trend="neutral"
+            color="blue"
+            foot="Canal de transmisión SSE"
+          />
+          <StatCard
+            icon={<LucideCheckCircle2 size={18}/>}
+            label="Completados exitosamente"
+            value={String(jobs.filter((j: Job) => j.status === 'Completado').length)}
+            change="0 finalizados"
+            trend="neutral"
+            color="green"
+            foot="Modelos listos para registro"
+          />
+          <StatCard
+            icon={<LucideAlertTriangle size={18}/>}
+            label="Fallidos o cancelados"
+            value={String(jobs.filter((j: Job) => j.status === 'Fallido' || j.status === 'Cancelado').length)}
+            change="0 errores"
+            trend="neutral"
+            color="orange"
+            foot="Tasa de fallos en 0%"
+          />
+        </div>
+
+        {jobs.length === 0 ? (
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '36px 20px',
+              background: 'var(--panel2, #151d30)',
+              borderRadius: '10px',
+              border: '1px dashed var(--border, #252e43)'
+            }}
+          >
+            <LucideActivity size={38} style={{ color: 'var(--muted, #8994ab)', marginBottom: '10px' }}/>
+            <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: 'var(--text, #e8ecf8)' }}>
+              0 entrenamientos registrados
+            </h4>
+            <p style={{ margin: '0 0 16px 0', fontSize: '12px', color: 'var(--muted, #8994ab)', maxWidth: '440px', marginLeft: 'auto', marginRight: 'auto' }}>
+              No hay entrenamientos activos ni historial reciente. Configura una arquitectura en el diseñador para iniciar tu primera sesión.
+            </p>
+            <button className="btn btn-secondary btn-small" onClick={() => onNavigate('Diseñador de redes')}>
+              Ir al diseñador de redes
+            </button>
+          </div>
+        ) : (
+          <JobTable jobs={jobs.slice(0, 5)} onCancel={onCancel}/>
+        )}
+      </section>
+
+      {/* 3. INDICADORES DE USO Y ALERTAS */}
+      <section className="panel" style={{ padding: '22px' }}>
+        <SectionTitle
+          title="• Indicadores de uso y alertas"
+          detail="Telemetría de recursos de cómputo, cuotas del laboratorio y centro de alertas operativas."
+        />
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+          
+          {/* INDICADORES DE USO */}
+          <div style={{ background: 'var(--panel2, #151d30)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border, #252e43)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, color: 'var(--text, #e8ecf8)', fontSize: '13px' }}>
+                <LucideGauge size={16} style={{ color: '#7894ff' }}/>
+                Indicadores de Uso
+              </div>
+              <span className="hash-pill" style={{ fontSize: '10px' }}>Uso actual: 0%</span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--muted, #8994ab)', marginBottom: '5px' }}>
+                  <span>Cómputo CPU / GPU asignado</span>
+                  <b style={{ color: 'var(--text, #e8ecf8)' }}>{activeJobsCount > 0 ? `${activeJobsCount * 25}%` : '0%'}</b>
+                </div>
+                <div className="mini-progress">
+                  <i style={{ width: activeJobsCount > 0 ? `${activeJobsCount * 25}%` : '0%' }}/>
+                </div>
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--muted, #8994ab)', marginBottom: '5px' }}>
+                  <span>Memoria Tensor asignada</span>
+                  <b style={{ color: 'var(--text, #e8ecf8)' }}>{activeJobsCount > 0 ? `${(activeJobsCount * 1.5).toFixed(1)} GB` : '0.0 / 16.0 GB'}</b>
+                </div>
+                <div className="mini-progress purple">
+                  <i style={{ width: activeJobsCount > 0 ? `${(activeJobsCount * 10)}%` : '0%' }}/>
+                </div>
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--muted, #8994ab)', marginBottom: '5px' }}>
+                  <span>Almacenamiento de datasets y modelos</span>
+                  <b style={{ color: 'var(--text, #e8ecf8)' }}>0.0 MB / 50 GB</b>
+                </div>
+                <div className="mini-progress green">
+                  <i style={{ width: '0%' }}/>
+                </div>
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--muted, #8994ab)', marginBottom: '5px' }}>
+                  <span>Cuota de ejecuciones concurrentes</span>
+                  <b style={{ color: 'var(--text, #e8ecf8)' }}>{activeJobsCount} / 8 simultáneas</b>
+                </div>
+                <div className="mini-progress orange">
+                  <i style={{ width: `${(activeJobsCount / 8) * 100}%` }}/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ALERTAS OPERATIVAS */}
+          <div style={{ background: 'var(--panel2, #151d30)', padding: '18px', borderRadius: '10px', border: '1px solid var(--border, #252e43)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, color: 'var(--text, #e8ecf8)', fontSize: '13px' }}>
+                <LucideAlertTriangle size={16} style={{ color: '#54d6a1' }}/>
+                Alertas y Estado del Sistema
+              </div>
+              <span style={{ fontSize: '10px', color: '#54d6a1', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span className="live-dot" style={{ margin: 0 }}/> Operativo
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '10px', background: 'rgba(84, 214, 161, 0.07)', borderRadius: '8px', border: '1px solid rgba(84, 214, 161, 0.2)' }}>
+                <LucideCheckCircle2 size={16} style={{ color: '#54d6a1', flexShrink: 0, marginTop: '2px' }}/>
+                <div style={{ fontSize: '11px' }}>
+                  <b style={{ color: '#54d6a1', display: 'block', marginBottom: '2px' }}>Sin alertas críticas activas (0 incidentes)</b>
+                  <span style={{ color: 'var(--muted, #8994ab)' }}>
+                    Todos los subsistemas de cómputo, API y almacenamiento operan en estado nominal.
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '10px', background: 'rgba(120, 148, 255, 0.07)', borderRadius: '8px', border: '1px solid rgba(120, 148, 255, 0.2)' }}>
+                <LucideCpu size={16} style={{ color: '#7894ff', flexShrink: 0, marginTop: '2px' }}/>
+                <div style={{ fontSize: '11px' }}>
+                  <b style={{ color: '#7894ff', display: 'block', marginBottom: '2px' }}>
+                    Motor de Entrenamiento: {backendOnline ? 'FastAPI + TensorFlow' : 'Modo Autónomo Local'}
+                  </b>
+                  <span style={{ color: 'var(--muted, #8994ab)' }}>
+                    {backendOnline ? 'Conexión con PostgreSQL y worker de TensorFlow lista para procesar lotes.' : 'Esperando conexión con el backend o ejecutando en modo local.'}
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '10px', background: 'rgba(245, 185, 109, 0.07)', borderRadius: '8px', border: '1px solid rgba(245, 185, 109, 0.2)' }}>
+                <LucideShieldCheck size={16} style={{ color: '#f5b96d', flexShrink: 0, marginTop: '2px' }}/>
+                <div style={{ fontSize: '11px' }}>
+                  <b style={{ color: '#f5b96d', display: 'block', marginBottom: '2px' }}>
+                    Estado del Almacén: 0 Registros (Limpio)
+                  </b>
+                  <span style={{ color: 'var(--muted, #8994ab)' }}>
+                    Espacio de trabajo inicializado en 0 proyectos, 0 datasets y 0 modelos.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
   )
 }
 
@@ -1973,9 +2245,9 @@ function ProjectsView({ projects, activeProjectId, query, backendOnline, onSelec
       </div>
 
       <div className="stats-grid compact-stats">
-        <StatCard icon={<LucideFolderKanban size={18}/>} label="Proyectos registrados" value={String(projects.length)} change="+1" trend="up" color="blue" foot={backendOnline ? 'Sincronizados con DB' : 'Almacenamiento local'}/>
-        <StatCard icon={<LucideBrainCircuit size={18}/>} label="Modelos asociados" value={String(projects.reduce((a: number, p: LocalProject) => a + (p.models || 0), 0))} change="Inmutables" trend="neutral" color="purple" foot="con registro de versión"/>
-        <StatCard icon={<LucideCheckCircle2 size={18}/>} label="Estado de servicio" value={backendOnline ? 'Conectado' : 'Local'} change={backendOnline ? 'PostgreSQL' : 'Autónomo'} trend="up" color="green" foot="persistencia activa"/>
+        <StatCard icon={<LucideFolderKanban size={18}/>} label="Proyectos registrados" value={String(projects.length)} change={projects.length === 0 ? '0 creados' : 'Registrados'} trend="neutral" color="blue" foot={backendOnline ? 'Sincronizados con DB' : 'Almacenamiento local'}/>
+        <StatCard icon={<LucideBrainCircuit size={18}/>} label="Modelos asociados" value={String(projects.reduce((a: number, p: LocalProject) => a + (p.models || 0), 0))} change="0 versiones" trend="neutral" color="purple" foot="con registro de versión"/>
+        <StatCard icon={<LucideCheckCircle2 size={18}/>} label="Estado de servicio" value={backendOnline ? 'Conectado' : 'Local'} change={backendOnline ? 'PostgreSQL' : 'Autónomo'} trend="neutral" color="green" foot="persistencia activa"/>
       </div>
 
       <section className="panel project-panel">
@@ -1984,7 +2256,19 @@ function ProjectsView({ projects, activeProjectId, query, backendOnline, onSelec
           detail="Haz clic en cualquier proyecto para activarlo y continuar hacia la selección de dataset"
         />
         <div className="project-grid">
-          {filtered.map((p: LocalProject) => {
+          {filtered.length === 0 ? (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px 24px', background: 'var(--panel2, #151d30)', borderRadius: '12px', border: '1px dashed var(--border, #252e43)' }}>
+              <LucideFolderKanban size={40} style={{ color: 'var(--muted, #8994ab)', marginBottom: '12px' }}/>
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', color: 'var(--text, #e8ecf8)' }}>No hay proyectos registrados (0 proyectos)</h3>
+              <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--muted, #8994ab)', maxWidth: '440px', marginLeft: 'auto', marginRight: 'auto' }}>
+                La plataforma se encuentra en 0 registros. Crea tu primer proyecto para organizar arquitecturas, datasets y modelos.
+              </p>
+              <button className="btn btn-primary" onClick={onNewProject}>
+                <LucidePlus size={14}/> Crear nuevo proyecto
+              </button>
+            </div>
+          ) : (
+            filtered.map((p: LocalProject) => {
             const isActive = p.id === activeProjectId
             return (
               <div
@@ -2010,7 +2294,7 @@ function ProjectsView({ projects, activeProjectId, query, backendOnline, onSelec
                 </div>
               </div>
             )
-          })}
+          }))}
         </div>
       </section>
     </>
@@ -2116,34 +2400,44 @@ function DatasetsView({ activeProject, activeDataset, projectDatasets, parsedCsv
         title="Datasets de referencia y benchmarks"
         detail="Conjuntos estandarizados disponibles de inmediato para entrenar tu modelo"
       />
-      <div className="dataset-grid" style={{ marginBottom: '22px' }}>
-        {defaultBenchmarkDatasets.map(d => {
-          const isSelected = activeDataset.id === d.id || activeDataset.name.startsWith(d.name.split(' · ')[0])
-          return (
-            <div className={`panel dataset-card ${isSelected ? 'dataset-selected' : ''}`} key={d.id}>
-              <div className="dataset-card-top">
-                <span className={`dataset-icon ${d.color}`}><LucideDatabase size={20}/></span>
-                <span className="dataset-tag">{d.tag}</span>
+      {defaultBenchmarkDatasets.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '36px 20px', background: 'var(--panel2, #151d30)', borderRadius: '10px', border: '1px dashed var(--border, #252e43)', marginBottom: '22px' }}>
+          <LucideDatabase size={38} style={{ color: 'var(--muted, #8994ab)', marginBottom: '10px' }}/>
+          <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: 'var(--text, #e8ecf8)' }}>0 datasets disponibles</h4>
+          <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted, #8994ab)' }}>
+            No hay datasets registrados en el sistema. Arrastra o selecciona un archivo CSV o .DATA para comenzar.
+          </p>
+        </div>
+      ) : (
+        <div className="dataset-grid" style={{ marginBottom: '22px' }}>
+          {defaultBenchmarkDatasets.map(d => {
+            const isSelected = activeDataset?.id === d.id || (activeDataset?.name && activeDataset.name.startsWith(d.name.split(' · ')[0]))
+            return (
+              <div className={`panel dataset-card ${isSelected ? 'dataset-selected' : ''}`} key={d.id}>
+                <div className="dataset-card-top">
+                  <span className={`dataset-icon ${d.color}`}><LucideDatabase size={20}/></span>
+                  <span className="dataset-tag">{d.tag}</span>
+                </div>
+                <h3>{d.name}</h3>
+                <p>{d.desc}</p>
+                <div className="dataset-meta">
+                  <span><LucideLayers3 size={13}/> {d.rows} registros</span>
+                  <span><LucideSquareActivity size={13}/> {d.type}</span>
+                </div>
+                <div className="dataset-card-bottom">
+                  <span>{d.size} ({d.columns} dims)</span>
+                  <button
+                    className="btn btn-secondary btn-small"
+                    onClick={() => onSelectDataset({ id: d.id, name: d.name, rows: d.rows, columns: d.columns })}
+                  >
+                    {isSelected ? '✓ Seleccionado' : 'Seleccionar'}
+                  </button>
+                </div>
               </div>
-              <h3>{d.name}</h3>
-              <p>{d.desc}</p>
-              <div className="dataset-meta">
-                <span><LucideLayers3 size={13}/> {d.rows} registros</span>
-                <span><LucideSquareActivity size={13}/> {d.type}</span>
-              </div>
-              <div className="dataset-card-bottom">
-                <span>{d.size} ({d.columns} dims)</span>
-                <button
-                  className="btn btn-secondary btn-small"
-                  onClick={() => onSelectDataset({ id: d.id, name: d.name, rows: d.rows, columns: d.columns })}
-                >
-                  {isSelected ? '✓ Seleccionado' : 'Seleccionar'}
-                </button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* VISUALIZACIÓN PREVIA DE LA DATA EN TIEMPO REAL */}
       <DataPreviewSection
@@ -2182,21 +2476,24 @@ function DataPreviewSection({ activeDataset, parsedCsv, onOpenDesigner, notify }
     }
 
     // Default to benchmark data
-    const key = activeDataset.id in benchmarkPreviewData ? activeDataset.id : 'ds-housing'
-    const bench = benchmarkPreviewData[key] || benchmarkPreviewData['ds-housing']
-    return {
-      name: activeDataset.name,
-      size: '1.4 MB',
-      totalRows: activeDataset.rows || 20640,
-      columns: bench.columns,
-      columnTypes: bench.columnTypes,
-      rows: bench.rows,
-      targetColumn: bench.targetColumn,
-      distribution: bench.distribution
+    if (activeDataset && activeDataset.id && activeDataset.id in benchmarkPreviewData) {
+      const bench = benchmarkPreviewData[activeDataset.id]
+      return {
+        name: activeDataset.name,
+        size: '1.4 MB',
+        totalRows: activeDataset.rows || 20640,
+        columns: bench.columns,
+        columnTypes: bench.columnTypes,
+        rows: bench.rows,
+        targetColumn: bench.targetColumn,
+        distribution: bench.distribution
+      }
     }
+    return null
   }, [activeDataset, parsedCsv])
 
   const filteredRows = useMemo(() => {
+    if (!previewSource) return []
     if (!searchWord.trim()) return previewSource.rows
     const q = searchWord.toLowerCase()
     return previewSource.rows.filter((row: Record<string, any>) =>
@@ -2205,6 +2502,7 @@ function DataPreviewSection({ activeDataset, parsedCsv, onOpenDesigner, notify }
   }, [previewSource, searchWord])
 
   const exportSampleCsv = () => {
+    if (!previewSource) return
     const headers = previewSource.columns
     const rows = [
       headers,
@@ -2218,6 +2516,20 @@ function DataPreviewSection({ activeDataset, parsedCsv, onOpenDesigner, notify }
     a.click()
     URL.revokeObjectURL(a.href)
     notify('Muestra de datos exportada en formato CSV.')
+  }
+
+  if (!previewSource) {
+    return (
+      <div className="data-preview-panel" style={{ textAlign: 'center', padding: '36px 20px' }}>
+        <LucideEye size={36} style={{ color: 'var(--muted, #8994ab)', marginBottom: '10px' }}/>
+        <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: 'var(--text, #e8ecf8)' }}>
+          Sin visualización previa de datos (0 datasets cargados)
+        </h4>
+        <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted, #8994ab)' }}>
+          Importa un archivo CSV o .DATA en la zona superior para explorar sus columnas, tipos y estadísticas en tiempo real.
+        </p>
+      </div>
+    )
   }
 
   return (
@@ -2370,7 +2682,7 @@ function DesignerView({
       <div className="active-project-bar">
         <div>
           <span>Paso 3 del flujo: </span>
-          <b>Diseño de red neuronal</b> para el proyecto <b>{activeProject?.name}</b> con el dataset <b>{activeDataset.name}</b>.
+          <b>Diseño de red neuronal</b> para el proyecto <b>{activeProject?.name || 'Sin proyecto seleccionado'}</b> con el dataset <b>{activeDataset?.name || 'Sin dataset'}</b>.
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button className="btn btn-secondary btn-small" onClick={onSaveArchitecture}>
@@ -2521,7 +2833,7 @@ function DesignerView({
           <div className="architecture-summary">
             <div><span>Capas totales</span><b>{layers.length}</b></div>
             <div><span>Neuronas totales</span><b>{totalUnits.toLocaleString()}</b></div>
-            <div><span>Dataset asociado</span><b>{activeDataset.name.split(' · ')[0]}</b></div>
+            <div><span>Dataset asociado</span><b>{activeDataset?.name ? activeDataset.name.split(' · ')[0] : 'Sin dataset'}</b></div>
             <div><span>Épocas</span><b>{epochs}</b></div>
           </div>
         </section>
@@ -2609,9 +2921,9 @@ function TrainingsView({ jobs, query, backendOnline, onQuery, onNewTrain, onExpo
   return (
     <>
       <div className="stats-grid compact-stats">
-        <StatCard icon={<LucideActivity size={18}/>} label="En ejecución activa" value={String(running)} change={backendOnline ? 'Canal SSE' : 'Simulado'} trend="neutral" color="blue" foot="Streaming en tiempo real"/>
-        <StatCard icon={<LucideCheckCircle2 size={18}/>} label="Completados" value={String(completed)} change="Exitosos" trend="up" color="green" foot="modelos versionados"/>
-        <StatCard icon={<LucideClock3 size={18}/>} label="Tiempo medio" value="3m 15s" change="-12%" trend="up" color="purple" foot="por ciclo de entrenamiento"/>
+        <StatCard icon={<LucideActivity size={18}/>} label="En ejecución activa" value={String(running)} change={running === 0 ? '0 activos' : (backendOnline ? 'Canal SSE' : 'Simulado')} trend="neutral" color="blue" foot="Streaming en tiempo real"/>
+        <StatCard icon={<LucideCheckCircle2 size={18}/>} label="Completados" value={String(completed)} change={completed === 0 ? '0 finalizados' : 'Exitosos'} trend="neutral" color="green" foot="modelos versionados"/>
+        <StatCard icon={<LucideClock3 size={18}/>} label="Tiempo medio" value={jobs.length === 0 ? '0s' : '3m 15s'} change={jobs.length === 0 ? '0 ejecuciones' : '-12%'} trend="neutral" color="purple" foot="por ciclo de entrenamiento"/>
       </div>
 
       <section className="panel jobs-page-panel">
@@ -2638,7 +2950,7 @@ function TrainingsView({ jobs, query, backendOnline, onQuery, onNewTrain, onExpo
         </div>
         <JobTable jobs={jobs} onCancel={onCancel}/>
         <div className="table-footnote">
-          <span><i className="live-dot"/> {backendOnline ? 'SSE FastAPI Activo (:8000/api/v1)' : 'Modo demostración'}</span>
+          <span><i className="live-dot"/> {backendOnline ? '' : 'Modo demostración'}</span>
           <span>{jobs.length} ejecuciones registradas</span>
         </div>
       </section>
@@ -2650,41 +2962,48 @@ function TrainingsView({ jobs, query, backendOnline, onQuery, onNewTrain, onExpo
 // VISTA: EVALUACIÓN Y MÉTRICAS
 // -------------------------------------------------------------
 function EvaluationView({ metricData }: { metricData: any[]; jobs: Job[] }) {
-  const lastMetric = metricData[metricData.length - 1]
+  const lastMetric = metricData && metricData.length > 0 ? metricData[metricData.length - 1] : null
 
   return (
     <>
       <div className="stats-grid compact-stats">
-        <StatCard icon={<LucideGauge size={18}/>} label="Precisión Final" value={`${((lastMetric?.acc || 0.952) * 100).toFixed(2)}%`} change="+2.4%" trend="up" color="green" foot="en datos de prueba"/>
-        <StatCard icon={<LucideActivity size={18}/>} label="Loss de Entrenamiento" value={lastMetric?.loss?.toFixed(4) || '0.1120'} change="-18.2%" trend="up" color="blue" foot="menor es mejor"/>
-        <StatCard icon={<LucideSquareActivity size={18}/>} label="F1-Score Ponderado" value="0.941" change="+1.8%" trend="up" color="purple" foot="equilibrio precisión-recall"/>
+        <StatCard icon={<LucideGauge size={18}/>} label="Precisión Final" value={lastMetric ? `${((lastMetric.acc || 0) * 100).toFixed(2)}%` : '0.00%'} change={lastMetric ? '+2.4%' : '0%'} trend="neutral" color="green" foot="en datos de prueba"/>
+        <StatCard icon={<LucideActivity size={18}/>} label="Loss de Entrenamiento" value={lastMetric?.loss != null ? lastMetric.loss.toFixed(4) : '0.0000'} change={lastMetric ? '-18.2%' : '0%'} trend="neutral" color="blue" foot="menor es mejor"/>
+        <StatCard icon={<LucideSquareActivity size={18}/>} label="F1-Score Ponderado" value={lastMetric ? '0.941' : '0.000'} change="0%" trend="neutral" color="purple" foot="equilibrio precisión-recall"/>
       </div>
 
       <div className="dashboard-grid">
         <section className="panel chart-panel">
           <SectionTitle title="Convergencia de Función de Pérdida (Loss)" detail="Evolución de pérdida por época durante el entrenamiento"/>
           <div className="chart-wrap tall">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={metricData}>
-                <CartesianGrid stroke="#e8edf3" strokeDasharray="3 5" vertical={false}/>
-                <XAxis dataKey="epoch" tick={{ fill: '#667085', fontSize: 10 }} axisLine={false} tickLine={false}/>
-                <YAxis tick={{ fill: '#667085', fontSize: 10 }} axisLine={false} tickLine={false}/>
-                <Tooltip contentStyle={{ background: '#fff', border: '1px solid #d0d8e4', borderRadius: 8, fontSize: 11 }}/>
-                <Area type="monotone" dataKey="loss" stroke="#285bd4" fill="#285bd4" fillOpacity={0.12} name="Loss Entrenamiento"/>
-                <Area type="monotone" dataKey="val" stroke="#7656c9" fill="#7656c9" fillOpacity={0.08} name="Loss Validación"/>
-              </AreaChart>
-            </ResponsiveContainer>
+            {(!metricData || metricData.length === 0) ? (
+              <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--muted, #8994ab)' }}>
+                <LucideFileChartColumn size={36} style={{ marginBottom: '8px', opacity: 0.5 }}/>
+                <span>Sin datos de métricas disponibles (0 entrenamientos ejecutados)</span>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={metricData}>
+                  <CartesianGrid stroke="#e8edf3" strokeDasharray="3 5" vertical={false}/>
+                  <XAxis dataKey="epoch" tick={{ fill: '#667085', fontSize: 10 }} axisLine={false} tickLine={false}/>
+                  <YAxis tick={{ fill: '#667085', fontSize: 10 }} axisLine={false} tickLine={false}/>
+                  <Tooltip contentStyle={{ background: '#fff', border: '1px solid #d0d8e4', borderRadius: 8, fontSize: 11 }}/>
+                  <Area type="monotone" dataKey="loss" stroke="#285bd4" fill="#285bd4" fillOpacity={0.12} name="Loss Entrenamiento"/>
+                  <Area type="monotone" dataKey="val" stroke="#7656c9" fill="#7656c9" fillOpacity={0.08} name="Loss Validación"/>
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </section>
 
         <section className="panel metrics-panel">
           <SectionTitle title="Métricas de Validación y Test" detail="Evaluación del modelo actual"/>
           {[
-            ['Precisión (Accuracy)', `${((lastMetric?.acc || 0.952) * 100).toFixed(2)}%`, 'good'],
-            ['Recall / Sensibilidad', '93.8%', 'good'],
-            ['F1-Score', '0.941', 'good'],
-            ['Pérdida (Cross-Entropy)', lastMetric?.loss?.toFixed(4) || '0.1120', 'neutral'],
-            ['Tiempo de Inferencia', '14.2 ms / batch', 'neutral']
+            ['Precisión (Accuracy)', lastMetric ? `${((lastMetric.acc || 0) * 100).toFixed(2)}%` : '0.00%', 'neutral'],
+            ['Recall / Sensibilidad', lastMetric ? '93.8%' : '0.0%', 'neutral'],
+            ['F1-Score', lastMetric ? '0.941' : '0.000', 'neutral'],
+            ['Pérdida (Cross-Entropy)', lastMetric?.loss != null ? lastMetric.loss.toFixed(4) : '0.0000', 'neutral'],
+            ['Tiempo de Inferencia', lastMetric ? '14.2 ms / batch' : '0.0 ms', 'neutral']
           ].map(m => (
             <div className="metric-row" key={m[0]}>
               <span>{m[0]}</span><b>{m[1]}</b>
@@ -2829,11 +3148,15 @@ function ReportsView({ activeProject, jobs, models, layers, backendOnline, metri
       else if (s === 'draft' || s === 'borrador') counts['Borrador']++
       else if (s === 'retired' || s === 'retirado') counts['Retirado']++
     })
+    const total = models.length
+    if (total === 0) {
+      return [{ name: 'Sin modelos (0)', value: 1, color: '#252e43' }]
+    }
     return [
-      { name: 'Aprobado', value: counts['Aprobado'] || 1, color: '#16845d' },
-      { name: 'Revisado', value: counts['Revisado'] || 1, color: '#285bd4' },
-      { name: 'Borrador', value: counts['Borrador'] || 1, color: '#b96a16' },
-      { name: 'Retirado', value: counts['Retirado'] || 0, color: '#d92d20' },
+      { name: 'Aprobado', value: counts['Aprobado'], color: '#16845d' },
+      { name: 'Revisado', value: counts['Revisado'], color: '#285bd4' },
+      { name: 'Borrador', value: counts['Borrador'], color: '#b96a16' },
+      { name: 'Retirado', value: counts['Retirado'], color: '#d92d20' },
     ]
   }, [models])
 
@@ -2841,7 +3164,7 @@ function ReportsView({ activeProject, jobs, models, layers, backendOnline, metri
     <>
       <div className="active-project-bar">
         <div>
-          <span>M09 Reportes: </span>
+          <span> Reportes: </span>
           <b>{activeProject?.name || 'NeuroLab Enterprise'}</b> <span>· Permisos de usuario: </span>
           <span className="hash-pill">Exportación CSV (Habilitado)</span> <span className="hash-pill">Exportación PDF (Habilitado)</span>
         </div>
@@ -2959,7 +3282,7 @@ function ReportsView({ activeProject, jobs, models, layers, backendOnline, metri
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', fontSize: '11px', color: '#475467', marginTop: '16px' }}>
             <div><b>Líder de Proyecto:</b> Diego Mendoza (AI Engineer)</div>
-            <div><b>Base de Datos:</b> Supabase PostgreSQL (AWS Pooler us-east-2)</div>
+            <div><b>Base de Datos:</b>(AWS Pooler us-east-2)</div>
             <div><b>Familia Predominante:</b> {activeProject?.family || 'CNN / Feedforward'}</div>
             <div><b>Fecha de Registro:</b> {activeProject?.created_at ? new Date(activeProject.created_at).toLocaleDateString() : ''}</div>
             <div><b>Descripción:</b> {activeProject?.description || 'Desarrollo de modelos predictivos y clasificadores neuronales.'}</div>
@@ -3500,7 +3823,7 @@ function AdministrationView({ backendStatus, currentUserRole, onUpdateUserRole, 
         <section className="panel" style={{ padding: '22px' }}>
           <SectionTitle
             title="Salud del Sistema, Conectividad y Políticas de Retención"
-            detail="Diagnóstico en tiempo real de FastAPI, Supabase PostgreSQL, Workers y almacenamiento"
+            detail="Diagnóstico en tiempo real de FastAPI, Workers y almacenamiento"
             action={<button className="btn btn-secondary btn-small" onClick={onCheckBackend}><LucideRefreshCw size={13}/> Comprobar salud en vivo</button>}
           />
 

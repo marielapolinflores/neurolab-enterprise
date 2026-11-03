@@ -1162,3 +1162,412 @@ css
     font-size: 21px;
   }
 }
+
+/* =========================================================
+   LANDING PAGE (PÁGINA PRINCIPAL PRE-LOGIN)
+========================================================= */
+.landing-shell {
+  min-height: 100vh;
+  background: #090d1a;
+  color: #e8ecf8;
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.landing-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(9, 13, 26, 0.85);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid #1c263d;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 40px;
+}
+
+.landing-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.landing-brand b {
+  font: 800 20px Manrope, sans-serif;
+  color: #f4f6ff;
+  letter-spacing: -0.5px;
+}
+
+.landing-brand b span {
+  color: #7894ff;
+}
+
+.landing-brand small {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #77839c;
+  margin-top: 1px;
+}
+
+.landing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.landing-nav-links a {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.18s;
+  cursor: pointer;
+}
+
+.landing-nav-links a:hover {
+  color: #e8ecf8;
+}
+
+.landing-hero {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 70px 24px 50px;
+  text-align: center;
+  position: relative;
+}
+
+.landing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(120, 148, 255, 0.1);
+  border: 1px solid rgba(120, 148, 255, 0.3);
+  color: #a6b8ff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 24px;
+}
+
+.landing-hero h1 {
+  font: 800 46px/1.18 Manrope, sans-serif;
+  color: #ffffff;
+  max-width: 880px;
+  margin: 0 auto 20px;
+  letter-spacing: -1.2px;
+}
+
+.landing-hero h1 .gradient-text {
+  background: linear-gradient(135deg, #7894ff 0%, #a194ff 50%, #54d6a1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.landing-hero p {
+  font-size: 16px;
+  line-height: 1.65;
+  color: #94a3b8;
+  max-width: 740px;
+  margin: 0 auto 36px;
+}
+
+.landing-hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 50px;
+  flex-wrap: wrap;
+}
+
+.landing-hero-actions .btn-hero-primary {
+  padding: 13px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.landing-hero-actions .btn-hero-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.45);
+}
+
+.landing-hero-actions .btn-hero-secondary {
+  padding: 13px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+  background: #151d30;
+  color: #e2e8f0;
+  border: 1px solid #2d3b59;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.landing-hero-actions .btn-hero-secondary:hover {
+  background: #1c2742;
+  border-color: #435479;
+}
+
+.landing-stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  max-width: 960px;
+  margin: 0 auto 50px;
+}
+
+.landing-stat-box {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+}
+
+.landing-stat-box b {
+  display: block;
+  font: 800 22px Manrope, sans-serif;
+  color: #7894ff;
+  margin-bottom: 4px;
+}
+
+.landing-stat-box span {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.landing-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 50px 24px;
+}
+
+.landing-section-title {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.landing-section-title h2 {
+  font: 800 30px Manrope, sans-serif;
+  color: #fff;
+  letter-spacing: -0.6px;
+  margin: 0 0 10px;
+}
+
+.landing-section-title p {
+  color: #94a3b8;
+  font-size: 14px;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.landing-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.landing-feature-card {
+  background: #12192a;
+  border: 1px solid #1f2b45;
+  border-radius: 14px;
+  padding: 26px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.landing-feature-card:hover {
+  transform: translateY(-3px);
+  border-color: #3b507d;
+}
+
+.landing-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 16px;
+}
+
+.landing-card-icon.blue { background: #1e2c4f; color: #7894ff; }
+.landing-card-icon.purple { background: #2f2552; color: #a194ff; }
+.landing-card-icon.green { background: #17382f; color: #54d6a1; }
+.landing-card-icon.orange { background: #3d2d1b; color: #f5b96d; }
+
+.landing-feature-card h3 {
+  font: 700 15px Manrope, sans-serif;
+  color: #f1f5f9;
+  margin: 0 0 8px;
+}
+
+.landing-feature-card p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #8fa0ba;
+  margin: 0;
+}
+
+.landing-workflow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.landing-step-card {
+  background: #12192a;
+  border: 1px solid #1f2b45;
+  border-radius: 12px;
+  padding: 22px;
+  position: relative;
+}
+
+.landing-step-num {
+  font: 800 11px Manrope;
+  color: #7894ff;
+  background: rgba(120, 148, 255, 0.12);
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.landing-step-card h4 {
+  font: 700 14px Manrope;
+  color: #fff;
+  margin: 0 0 6px;
+}
+
+.landing-step-card p {
+  font-size: 11px;
+  line-height: 1.55;
+  color: #8fa0ba;
+  margin: 0;
+}
+
+.landing-cta-banner {
+  background: linear-gradient(135deg, #182544 0%, #1a1e3a 100%);
+  border: 1px solid #2d3e68;
+  border-radius: 16px;
+  padding: 44px;
+  text-align: center;
+  max-width: 1000px;
+  margin: 40px auto 60px;
+}
+
+.landing-cta-banner h2 {
+  font: 800 28px Manrope;
+  color: #fff;
+  margin: 0 0 12px;
+}
+
+.landing-cta-banner p {
+  color: #94a3b8;
+  font-size: 14px;
+  max-width: 580px;
+  margin: 0 auto 28px;
+}
+
+.landing-footer {
+  border-top: 1px solid #1c263d;
+  padding: 26px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #64748b;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* SIMULADOR PERCEPTRON (FUNDAMENTOS) */
+.perceptron-sim {
+  background: #12192a;
+  border: 1px solid #252e43;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 20px;
+}
+.perceptron-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
+}
+.perceptron-ctrl {
+  background: #151d30;
+  border: 1px solid #252e43;
+  border-radius: 10px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.perceptron-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+}
+.perceptron-slider label {
+  display: flex;
+  justify-content: space-between;
+  color: #94a3b8;
+}
+.perceptron-slider label b {
+  color: #e8ecf8;
+}
+.perceptron-slider input[type="range"] {
+  width: 100%;
+  accent-color: #7894ff;
+}
+.perceptron-display {
+  background: #151d30;
+  border: 1px solid #252e43;
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.perceptron-result-box {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font: 800 28px Manrope;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+  margin: 16px 0;
+}
+
+@media (max-width: 768px) {
+  .landing-nav-links { display: none; }
+  .landing-hero h1 { font-size: 30px; }
+  .landing-stats-strip { grid-template-columns: repeat(2, 1fr); }
+  .landing-cards-grid { grid-template-columns: 1fr; }
+  .landing-workflow { grid-template-columns: 1fr; }
+  .landing-footer { flex-direction: column; gap: 12px; text-align: center; }
+  .perceptron-grid { grid-template-columns: 1fr; }
+}
