@@ -8,27 +8,58 @@ import {
   BackendAuditEvent, HealthResponse, TrainingEventPayload, BackendDataset,
   BackendArchitecture, AdminUser, SystemStatusData, ProjectReportData, AuthUser
 } from './api/client'
+
 import {
-  Activity as LucideActivity, BrainCircuit as LucideBrainCircuit,
-  Database as LucideDatabase, FolderKanban as LucideFolderKanban,
-  FileSpreadsheet as LucideFileSpreadsheet, Download as LucideDownload,
-  Upload as LucideUpload, Check as LucideCheck, X as LucideX,
-  Play as LucidePlay, StopCircle as LucideStopCircle, Eye as LucideEye,
-  Plus as LucidePlus, Shield as LucideShield, Lock as LucideLock,
-  LogOut as LucideLogOut, LogIn as LucideLogIn, Key as LucideKey,
-  Printer as LucidePrinter, Trash2 as LucideTrash2, RefreshCw as LucideRefreshCw,
-  Search as LucideSearch, Bell as LucideBell, Menu as LucideMenu,
-  ChevronDown as LucideChevronDown, Sparkles as LucideSparkles,
-  ArrowRight as LucideArrowRight, ArrowUpRight as LucideArrowUpRight,
-  ShieldCheck as LucideShieldCheck, UserPlus as LucideUserPlus,
-  CheckCircle2 as LucideCheckCircle2, CircleHelp as LucideCircleHelp,
-  Clock3 as LucideClock3, Cpu as LucideCpu, Gauge as LucideGauge,
-  Layers3 as LucideLayers3, FileChartColumn as LucideFileChartColumn,
-  GitBranch as LucideGitBranch, LayoutDashboard as LucideLayoutDashboard,
-  BookOpen as LucideBookOpen, SquareActivity as LucideSquareActivity,
-  MoreHorizontal as LucideMoreHorizontal, Filter as LucideFilter,
-  BarChart3 as LucideBarChart3, Network as LucideNetwork, Zap as LucideZap
+  Activity as LucideActivity,
+  BrainCircuit as LucideBrainCircuit,
+  Database as LucideDatabase,
+  FolderKanban as LucideFolderKanban,
+  FileSpreadsheet as LucideFileSpreadsheet,
+  Download as LucideDownload,
+  Upload as LucideUpload,
+  Check as LucideCheck,
+  X as LucideX,
+  Play as LucidePlay,
+  StopCircle as LucideStopCircle,
+  Eye as LucideEye,
+  Plus as LucidePlus,
+  Shield as LucideShield,
+  Lock as LucideLock,
+  LogOut as LucideLogOut,
+  LogIn as LucideLogIn,
+  Key as LucideKey,
+  Printer as LucidePrinter,
+  Trash2 as LucideTrash2,
+  RefreshCw as LucideRefreshCw,
+  Search as LucideSearch,
+  Bell as LucideBell,
+  Menu as LucideMenu,
+  ChevronDown as LucideChevronDown,
+  Sparkles as LucideSparkles,
+  ArrowRight as LucideArrowRight,
+  ArrowUpRight as LucideArrowUpRight,
+  ShieldCheck as LucideShieldCheck,
+  UserPlus as LucideUserPlus,
+  CheckCircle2 as LucideCheckCircle2,
+  CircleHelp as LucideCircleHelp,
+  Clock3 as LucideClock3,
+  Cpu as LucideCpu,
+  Gauge as LucideGauge,
+  Layers3 as LucideLayers3,
+  FileChartColumn as LucideFileChartColumn,
+  GitBranch as LucideGitBranch,
+  LayoutDashboard as LucideLayoutDashboard,
+  BookOpen as LucideBookOpen,
+  SquareActivity as LucideSquareActivity,
+  MoreHorizontal as LucideMoreHorizontal,
+  Filter as LucideFilter,
+  BarChart3 as LucideBarChart3,
+  Network as LucideNetwork,
+  Zap as LucideZap,
+  Mail as LucideMail,
+  LockKeyhole as LucideLockKeyhole
 } from 'lucide-react'
+
 
 export type Page =
   | 'Dashboard'
@@ -477,7 +508,7 @@ export default function App() {
     if (backendStatus.online) {
       try {
         const created = await api.createProject(name, desc)
-        notify(`Paso 1 completado: Proyecto "${created.name}" guardado en PostgreSQL. Ahora selecciona o importa un dataset.`)
+        notify(`Paso 1 completado: Proyecto "${created.name}" guardado . Ahora selecciona o importa un dataset.`)
         await loadProjectsFromBackend()
         setActiveProjectId(created.id)
         setPage('Datasets')
@@ -655,7 +686,7 @@ export default function App() {
           family,
           config: { layers, optimizer, learning_rate: learningRate }
         })
-        notify(`Arquitectura "${arch.name}" guardada en base de datos PostgreSQL.`)
+        notify(`Arquitectura "${arch.name}" guardada .`)
       } catch (err: any) {
         notify(`Error guardando arquitectura: ${err.message}`)
       }
@@ -783,7 +814,7 @@ export default function App() {
     if (backendStatus.online && backendId) {
       try {
         await api.cancelTrainingJob(targetId)
-        notify(`Trabajo ${id} cancelado en el backend PostgreSQL.`)
+        notify(`Trabajo ${id} cancelado en el backend .`)
       } catch (err: any) {
         notify(`Error cancelando: ${err.message}`)
       }
@@ -798,7 +829,7 @@ export default function App() {
     if (backendStatus.online && activeProjectId) {
       try {
         await api.updateModelStatus(activeProjectId, modelId, newStatus)
-        notify(`Estado del modelo actualizado a "${newStatus}" y auditado en base de datos.`)
+        notify(`Estado del modelo actualizado a "${newStatus}" y auditado .`)
         await loadModelsFromBackend(activeProjectId)
         return
       } catch (err: any) {
@@ -986,7 +1017,7 @@ export default function App() {
               onClick={() => checkBackend(true)}
               style={{ cursor: 'pointer' }}
             >
-              <i/> {backendStatus.online ? 'FastAPI + PostgreSQL Conectado' : 'Modo Local / Demo'}
+              <i/> {backendStatus.online ? ' Conectado' : 'Modo Local / Demo'}
             </span>
 
             <div className="search-box">
@@ -1019,78 +1050,18 @@ export default function App() {
         <div className="content">
           {/* LOGICAL WORKFLOW STEPPER BAR */}
           <div className="workflow-bar">
-            <span className="workflow-label">FLUJO DE TRABAJO:</span>
             
-            <button
-              className={`step-chip ${page === 'Proyectos' ? 'active' : activeProject ? 'done' : ''}`}
-              onClick={() => setPage('Proyectos')}
-              title="Paso 1: Crear o seleccionar un proyecto"
-            >
-              <span className="step-num">1</span>
-              <span>Proyecto: <b>{activeProject?.name || 'Sin seleccionar'}</b></span>
-            </button>
+            
+              
 
-            <span className="step-arrow">→</span>
-
-            <button
-              className={`step-chip ${page === 'Datasets' ? 'active' : activeDataset ? 'done' : ''}`}
-              onClick={() => setPage('Datasets')}
-              title="Paso 2: Importar o seleccionar un dataset del computador o benchmark"
-            >
-              <span className="step-num">2</span>
-              <span>Dataset: <b>{activeDataset?.name.split(' · ')[0] || 'Pendiente'}</b></span>
-            </button>
-
-            <span className="step-arrow">→</span>
-
-            <button
-              className={`step-chip ${page === 'Diseñador de redes' ? 'active' : ''}`}
-              onClick={() => setPage('Diseñador de redes')}
-              title="Paso 3: Diseñar capas y topología"
-            >
-              <span className="step-num">3</span>
-              <span>Diseño Red</span>
-            </button>
-
-            <span className="step-arrow">→</span>
-
-            <button
-              className={`step-chip ${page === 'Entrenamientos' ? 'active' : ''}`}
-              onClick={() => setPage('Entrenamientos')}
-              title="Paso 4: Entrenar y monitorear con SSE"
-            >
-              <span className="step-num">4</span>
-              <span>Entrenamiento</span>
-            </button>
-
-            <span className="step-arrow">→</span>
-
-            <button
-              className={`step-chip ${page === 'Registro de modelos' ? 'active' : ''}`}
-              onClick={() => setPage('Registro de modelos')}
-              title="Paso 5: M08 Registro de modelos y versiones inmutables"
-            >
-              <span className="step-num">5</span>
-              <span>M08 Modelos</span>
-            </button>
-
-            <span className="step-arrow">→</span>
-
-            <button
-              className={`step-chip ${page === 'Reportes' ? 'active' : ''}`}
-              onClick={() => setPage('Reportes')}
-              title="Paso 6: M09 Reportes ejecutivos con gráficas y PDF"
-            >
-              <span className="step-num">6</span>
-              <span>M09 Reportes</span>
-            </button>
+           
           </div>
 
           {/* PAGE TITLE & HEADING ACTIONS */}
           <div className="page-heading">
             <div>
               <div className="eyebrow">
-                <span className="live-dot"/> SISTEMA OPERATIVO <span className="slash">/</span> OCTUBRE 2026
+                <span className="live-dot"/> SISTEMA OPERATIVO <span className="slash">/</span> 
               </div>
               <h1>{page === 'Dashboard' ? 'Panel de control' : page}</h1>
               <p>{getPageDescription(page)}</p>
@@ -1274,7 +1245,7 @@ export default function App() {
               <button className="icon-btn" onClick={() => setModal(null)}><LucideX size={18}/></button>
             </div>
             <p>
-              Crea un espacio de trabajo en Supabase PostgreSQL. La lógica del sistema requiere que primero crees un proyecto y luego selecciones o importes un dataset.
+              Crea un espacio de trabajo. La lógica del sistema requiere que primero crees un proyecto y luego selecciones o importes un dataset.
             </p>
             <label>
               Nombre del proyecto
@@ -1441,7 +1412,7 @@ export default function App() {
             <div className="modal-title">
               <div>
                 <span className="modal-icon"><LucideGitBranch size={18}/></span>
-                <h2>M08 · Ficha Técnica y Metadatos de Entrenamiento</h2>
+                <h2>Ficha Técnica y Metadatos de Entrenamiento</h2>
               </div>
               <button className="icon-btn" onClick={() => setModal(null)}><LucideX size={18}/></button>
             </div>
@@ -1474,7 +1445,7 @@ export default function App() {
                 <div><b>Épocas totales:</b> {selectedModelForModal.epochs || 50}</div>
                 <div><b>Fecha de creación:</b> {selectedModelForModal.created_at ? new Date(selectedModelForModal.created_at).toLocaleString() : 'Reciente'}</div>
                 <div><b>Almacenamiento:</b> {selectedModelForModal.storage_key || 'Supabase Model Registry Storage'}</div>
-                <div><b>Cumplimiento:</b> Inmutable y firmado conforme a NeuroLab Octubre 2026</div>
+                <div><b>Cumplimiento:</b> Inmutable y firmado conforme a NeuroLab </div>
               </div>
             </div>
 
@@ -1515,7 +1486,7 @@ export default function App() {
                 <code>CSV & PDF Oficial</code>
               </div>
               <div className="admin-cred-row">
-                <span>Control M08/M09/M10:</span>
+                <span>Control :</span>
                 <code>Habilitado</code>
               </div>
             </div>
@@ -1549,8 +1520,8 @@ export default function App() {
                 <li><b>Paso 2 (Datasets):</b> Importa un archivo <code>.csv</code> o <code>.data</code> desde tu computadora con visualización previa en vivo, o selecciona un benchmark.</li>
                 <li><b>Paso 3 (Diseñador):</b> Configura las capas neuronales adaptadas a las dimensiones del dataset.</li>
                 <li><b>Paso 4 (Entrenamientos):</b> Lanza el entrenamiento con feedback SSE en vivo.</li>
-                <li><b>Paso 5 (M08 Registro de Modelos):</b> Administra versiones inmutables con estados <i>borrador/revisado/aprobado/retirado</i> y descarga autorizada.</li>
-                <li><b>Paso 6 (M09 Reportes):</b> Genera fichas técnicas, analiza gráficas y exporta a PDF o CSV.</li>
+                <li><b>Paso 5 ( Registro de Modelos):</b> Administra versiones inmutables con estados <i>borrador/revisado/aprobado/retirado</i> y descarga autorizada.</li>
+                <li><b>Paso 6 ( Reportes):</b> Genera fichas técnicas, analiza gráficas y exporta a PDF o CSV.</li>
               </ol>
             </div>
             <div className="modal-actions">
@@ -1566,17 +1537,26 @@ export default function App() {
   )
 }
 
+
 // -------------------------------------------------------------
 // PANTALLA DE LOGIN CON CREDENCIALES DE ADMINISTRADOR
 // -------------------------------------------------------------
-function LoginView({ onLoginSuccess }: { onLoginSuccess: (user: AuthUser) => void }) {
+function LoginView({
+  onLoginSuccess
+}: {
+  onLoginSuccess: (user: AuthUser) => void
+}) {
   const [email, setEmail] = useState('admin@neurolab.enterprise')
   const [password, setPassword] = useState('admin123')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // -------------------------------------------------------------
+  // LOGIN NORMAL
+  // -------------------------------------------------------------
   const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
+
     setError('')
     setLoading(true)
 
@@ -1584,20 +1564,31 @@ function LoginView({ onLoginSuccess }: { onLoginSuccess: (user: AuthUser) => voi
       const res = await api.login(email, password)
       onLoginSuccess(res.user)
     } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión. Verifica las credenciales.')
+      setError(
+        err.message ||
+        'Error al iniciar sesión. Verifica las credenciales.'
+      )
     } finally {
       setLoading(false)
     }
   }
 
+  // -------------------------------------------------------------
+  // LOGIN RÁPIDO DE ADMINISTRADOR
+  // -------------------------------------------------------------
   const handleQuickAdminLogin = () => {
     setEmail('admin@neurolab.enterprise')
     setPassword('admin123')
     setError('')
     setLoading(true)
+
     setTimeout(async () => {
       try {
-        const res = await api.login('admin@neurolab.enterprise', 'admin123')
+        const res = await api.login(
+          'admin@neurolab.enterprise',
+          'admin123'
+        )
+
         onLoginSuccess(res.user)
       } catch (err: any) {
         setError(err.message || 'Error en login.')
@@ -1610,96 +1601,204 @@ function LoginView({ onLoginSuccess }: { onLoginSuccess: (user: AuthUser) => voi
   return (
     <div className="login-shell">
       <div className="login-box">
+
+        {/* -------------------------------------------------------
+            MARCA
+        ------------------------------------------------------- */}
         <div className="login-brand">
-          <div className="login-brand-icon"><LucideBrainCircuit size={26}/></div>
+
+          <div className="login-brand-icon">
+            <LucideBrainCircuit size={27} />
+          </div>
+
           <div>
-            <h2>NeuroLab<span>.</span></h2>
-            <span>ENTERPRISE AI PLATFORM · OCTUBRE 2026</span>
+            <h2>
+              NeuroLab<span>.</span>
+            </h2>
+
+            <span>
+              ENTERPRISE AI PLATFORM
+            </span>
           </div>
+
         </div>
 
+        {/* -------------------------------------------------------
+            ENCABEZADO
+        ------------------------------------------------------- */}
         <div className="login-header">
-          <h3>Inicio de Sesión Seguro</h3>
-          <p>Ingresa tus credenciales para acceder a los módulos de diseño, entrenamiento y modelos.</p>
+
+          <h3>
+            Bienvenido de nuevo
+          </h3>
+
+          <p>
+            Inicia sesión para acceder al laboratorio de
+            inteligencia artificial.
+          </p>
+
         </div>
 
-        {/* TARJETA DE CREDENCIALES DE ADMINISTRADOR */}
-        <div className="admin-credentials-card">
-          <div className="admin-credentials-header">
-            <span><LucideShieldCheck size={15}/> Credenciales de Administrador</span>
-            <span className="hash-pill">ADMINISTRADOR</span>
-          </div>
-          <div className="admin-cred-row">
-            <span>Usuario:</span>
-            <code>admin@neurolab.enterprise</code>
-          </div>
-          <div className="admin-cred-row">
-            <span>Contraseña:</span>
-            <code>admin123</code>
-          </div>
-          <button
-            type="button"
-            className="one-click-admin-btn"
-            onClick={handleQuickAdminLogin}
-            disabled={loading}
-          >
-            <LucideKey size={14}/> ⚡ Iniciar como Administrador (1-Clic)
-          </button>
-        </div>
-
+        {/* -------------------------------------------------------
+            MENSAJE DE ERROR
+        ------------------------------------------------------- */}
         {error && (
-          <div style={{ background: '#fef3f2', border: '1px solid #fecdca', color: '#b42318', padding: '10px 12px', borderRadius: '8px', fontSize: '11px', marginBottom: '16px' }}>
-            {error}
+          <div className="login-error">
+
+            <span>⚠</span>
+
+            <span>
+              {error}
+            </span>
+
           </div>
         )}
 
+        {/* -------------------------------------------------------
+            FORMULARIO
+        ------------------------------------------------------- */}
         <form onSubmit={handleLogin}>
-          <label className="field-label">
-            Correo electrónico
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="admin@neurolab.enterprise"
-            />
-          </label>
 
-          <label className="field-label">
-            Contraseña
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
-          </label>
+          {/* CORREO ELECTRÓNICO */}
+          <div className="login-field">
 
+            <label>
+              Correo electrónico
+            </label>
+
+            <div className="input-wrapper">
+
+              <LucideMail
+                size={17}
+                className="input-icon"
+              />
+
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@neurolab.enterprise"
+                autoComplete="email"
+              />
+
+            </div>
+
+          </div>
+
+          {/* CONTRASEÑA */}
+          <div className="login-field">
+
+            <label>
+              Contraseña
+            </label>
+
+            <div className="input-wrapper">
+
+              <LucideLockKeyhole
+                size={17}
+                className="input-icon"
+              />
+
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Ingresa tu contraseña"
+                autoComplete="current-password"
+              />
+
+            </div>
+
+          </div>
+
+          {/* -----------------------------------------------------
+              OPCIONES
+          ----------------------------------------------------- */}
+          <div className="login-options">
+
+            <label className="remember-option">
+
+              <input
+                type="checkbox"
+              />
+
+              <span>
+                Recordarme
+              </span>
+
+            </label>
+
+            <span className="forgot-password">
+              Acceso seguro
+            </span>
+
+          </div>
+
+          {/* -----------------------------------------------------
+              BOTÓN INICIAR SESIÓN
+          ----------------------------------------------------- */}
           <button
             type="submit"
-            className="btn btn-primary full-btn"
-            style={{ height: '42px', marginTop: '14px', fontSize: '12px' }}
+            className="login-submit"
             disabled={loading}
           >
-            {loading ? 'Validando credenciales...' : <><LucideLogIn size={15}/> Iniciar Sesión</>}
+
+            {loading ? (
+              <>
+                <span className="login-spinner"></span>
+
+                <span>
+                  Validando credenciales...
+                </span>
+              </>
+            ) : (
+              <>
+                <LucideLogIn size={17} />
+
+                <span>
+                  Iniciar Sesión
+                </span>
+              </>
+            )}
+
           </button>
+
         </form>
+
+        {/* -------------------------------------------------------
+            SEGURIDAD
+        ------------------------------------------------------- */}
+        <div className="login-footer">
+
+          <LucideShieldCheck size={14} />
+
+          <span>
+            Conexión segura · NeuroLab Enterprise
+          </span>
+
+        </div>
+
       </div>
     </div>
   )
 }
 
+
+
+
+
 function getPageDescription(page: Page) {
   const d: Record<Page, string> = {
     Dashboard: 'Resumen ejecutivo del laboratorio y telemetría en tiempo real.',
-    Proyectos: 'Paso 1: Organiza tus proyectos y espacios de trabajo conectados a PostgreSQL.',
+    Proyectos: 'Paso 1: Organiza tus proyectos y espacios de trabajo conectados.',
     Datasets: 'Paso 2: Importa archivos CSV/Data desde tu computadora o selecciona benchmarks con visualización previa.',
     'Diseñador de redes': 'Paso 3: Construye arquitecturas neuronales con TensorFlow / Keras.',
     Entrenamientos: 'Paso 4: Supervisa ejecuciones y curvas de aprendizaje en vivo por SSE.',
     'Evaluación y métricas': 'Análisis de pérdida, precisión, matrices y métricas de desempeño.',
-    'Registro de modelos': 'M08: Versiones inmutables, metadatos y ciclo borrador/revisado/aprobado/retirado.',
-    Reportes: 'M09: Ficha de proyecto, resumen arquitectónico, gráficas y exportación CSV/PDF.',
+    'Registro de modelos': ': Versiones inmutables, metadatos y ciclo borrador/revisado/aprobado/retirado.',
+    Reportes: ' Ficha de proyecto, resumen arquitectónico, gráficas y exportación CSV/PDF.',
     Administración: 'M10: Usuarios RBAC, auditoría de acciones, límites de recursos y retención.',
     Fundamentos: 'Bases teóricas de deep learning, neuronas, capas y optimizadores.'
   }
@@ -1747,7 +1846,7 @@ function Dashboard({ jobs, activeJobsCount, metricData, backendOnline, activePro
           <span className="banner-kicker"><LucideSparkles size={13}/> NEUROLAB ENTERPRISE</span>
           <h2>Tu laboratorio de deep learning empresarial.</h2>
           <p>
-            Proyecto activo: <b>{activeProject?.name || 'Selecciona un proyecto'}</b>. Sigue el flujo: Proyecto → Dataset → Diseñador → Entrenamiento.
+            Proyecto activo: <b>{activeProject?.name || 'Selecciona un proyecto'}</b>. 
           </p>
         </div>
         <div className="banner-visual">
@@ -1833,7 +1932,7 @@ function Dashboard({ jobs, activeJobsCount, metricData, backendOnline, activePro
           <button className="quick-link" onClick={() => onNavigate('Registro de modelos')}>
             <span className="quick-icon orange"><LucideGitBranch size={18}/></span>
             <span>
-              <b>M08: Registro de modelos</b>
+              <b>Registro de modelos</b>
               <small>Versiones inmutables y control de ciclo</small>
             </span>
             <LucideArrowUpRight size={15}/>
@@ -2334,7 +2433,7 @@ function DesignerView({
             <LucideShieldCheck size={16}/>
             <span>
               {backendOnline
-                ? 'Conexión activa: La arquitectura se compilará con Keras/TensorFlow en el backend y persistirá en PostgreSQL.'
+                ? 'Conexión activa: La arquitectura se compilará con Keras/TensorFlow en el backend y persistirá .'
                 : 'Modo local: El motor numérico calculará las métricas localmente.'}
             </span>
           </div>
@@ -2620,7 +2719,7 @@ function ModelRegistryView({ activeProject, models, backendOnline, onUpdateStatu
   return (
     <section className="panel jobs-page-panel">
       <SectionTitle
-        title="M08. Registro de Modelos — Versiones Inmutables y Gobernanza"
+        title=" Registro de Modelos — Versiones Inmutables y Gobernanza"
         detail="Gestión del ciclo de vida del modelo (borrador / revisado / aprobado / retirado) con checksums criptográficos"
         action={
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -2674,7 +2773,7 @@ function ModelRegistryView({ activeProject, models, backendOnline, onUpdateStatu
 
               <div className="registry-date">
                 <small>Registrado</small>
-                <span>{m.created_at ? new Date(m.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }) : 'Octubre 2026'}</span>
+                <span>{m.created_at ? new Date(m.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }) : ''}</span>
               </div>
 
               <div style={{ display: 'flex', gap: '6px' }}>
@@ -2819,7 +2918,7 @@ function ReportsView({ activeProject, jobs, models, layers, backendOnline, metri
           </section>
 
           <section className="panel chart-panel">
-            <SectionTitle title="Gobernanza de Modelos M08" detail="Distribución por estado de ciclo de vida"/>
+            <SectionTitle title="Gobernanza de Modelos " detail="Distribución por estado de ciclo de vida"/>
             <div className="chart-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -2862,7 +2961,7 @@ function ReportsView({ activeProject, jobs, models, layers, backendOnline, metri
             <div><b>Líder de Proyecto:</b> Diego Mendoza (AI Engineer)</div>
             <div><b>Base de Datos:</b> Supabase PostgreSQL (AWS Pooler us-east-2)</div>
             <div><b>Familia Predominante:</b> {activeProject?.family || 'CNN / Feedforward'}</div>
-            <div><b>Fecha de Registro:</b> {activeProject?.created_at ? new Date(activeProject.created_at).toLocaleDateString() : 'Octubre 2026'}</div>
+            <div><b>Fecha de Registro:</b> {activeProject?.created_at ? new Date(activeProject.created_at).toLocaleDateString() : ''}</div>
             <div><b>Descripción:</b> {activeProject?.description || 'Desarrollo de modelos predictivos y clasificadores neuronales.'}</div>
             <div><b>Cumplimiento Normativo:</b> Especificación técnica y funcional • Versión 1.0</div>
           </div>
@@ -2935,7 +3034,7 @@ function ReportsView({ activeProject, jobs, models, layers, backendOnline, metri
           <div className="report-header-banner">
             <div>
               <div className="report-company-title">NEUROLAB ENTERPRISE</div>
-              <div className="report-company-sub">DOCUMENTO MAESTRO DE DESARROLLO · VERSIÓN 1.0 · OCTUBRE 2026</div>
+              <div className="report-company-sub">DOCUMENTO MAESTRO DE DESARROLLO · VERSIÓN 1.0 ·</div>
             </div>
             <div className="report-meta-box">
               <div><b>INFORME TÉCNICO OFICIAL</b></div>
@@ -2987,7 +3086,7 @@ function ReportsView({ activeProject, jobs, models, layers, backendOnline, metri
             </table>
           </div>
 
-          <div className="report-section-header">3. HISTORIAL DE ENTRENAMIENTO Y GOBERNANZA (M08)</div>
+          <div className="report-section-header">3. HISTORIAL DE ENTRENAMIENTO Y GOBERNANZA </div>
           <div className="table-wrap">
             <table>
               <thead>
@@ -3103,7 +3202,7 @@ function AdministrationView({ backendStatus, currentUserRole, onUpdateUserRole, 
     if (backendStatus.online) {
       try {
         const res = await api.runRetentionCleanup(retentionDays)
-        notify(res.message || 'Limpieza de retención completada en PostgreSQL.')
+        notify(res.message || 'Limpieza de retención completada .')
         return
       } catch (err: any) {
         notify(`Error ejecutando retención: ${err.message}`)
@@ -3250,14 +3349,14 @@ function AdministrationView({ backendStatus, currentUserRole, onUpdateUserRole, 
                   <td><span className="rbac-cross">—</span></td>
                 </tr>
                 <tr>
-                  <td>Aprobar / Retirar modelos (M08)</td>
+                  <td>Aprobar / Retirar modelos </td>
                   <td><span className="rbac-check">✓</span></td>
                   <td><span className="rbac-cross">—</span></td>
                   <td><span className="rbac-check">✓</span></td>
                   <td><span className="rbac-cross">—</span></td>
                 </tr>
                 <tr>
-                  <td>Exportar PDF Oficial y CSV (M09)</td>
+                  <td>Exportar PDF Oficial y CSV </td>
                   <td><span className="rbac-check">✓</span></td>
                   <td><span className="rbac-check">✓</span></td>
                   <td><span className="rbac-check">✓</span></td>
