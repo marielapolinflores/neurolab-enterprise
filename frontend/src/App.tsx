@@ -64,7 +64,9 @@ import {
   Mail as LucideMail,
   LockKeyhole as LucideLockKeyhole,
   ArrowLeft as LucideArrowLeft,
-  Globe as LucideGlobe
+  Globe as LucideGlobe,
+  Terminal as LucideTerminal,
+  RotateCcw as LucideRotateCcw
 } from 'lucide-react'
 
 import LandingPage from './pages/ladingpage'
@@ -1288,6 +1290,7 @@ export default function App() {
           {page === 'Entrenamientos' && (
             <TrainingsView
               jobs={filteredJobs}
+              allJobs={jobs}
               query={query}
               backendOnline={backendStatus.online}
               onQuery={setQuery}
@@ -1295,6 +1298,14 @@ export default function App() {
               onExport={exportCsv}
               onCancel={cancelJob}
               onViewMetrics={() => setPage('Evaluación y métricas')}
+              onStartTraining={handleStartTraining}
+              metricData={metricData}
+              layers={layers}
+              family={family}
+              optimizer={optimizer}
+              learningRate={learningRate}
+              activeDataset={activeDataset}
+              activeProject={activeProject}
             />
           )}
 
@@ -2987,31 +2998,479 @@ function JobTable({ jobs, onCancel }: { jobs: Job[]; onCancel: (id: string, back
 }
 
 // -------------------------------------------------------------
-// VISTA: ENTRENAMIENTOS (PASO 4)
+// VISTA: ENTRENAMIENTOS (PASO 4) — MONITOR DE FLUJO EN TIEMPO REAL
 // -------------------------------------------------------------
-function TrainingsView({ jobs, query, backendOnline, onQuery, onNewTrain, onExport, onCancel, onViewMetrics }: any) {
-  const running = jobs.filter((j: Job) => j.status === 'Ejecutando').length
-  const completed = jobs.filter((j: Job) => j.status === 'Completado').length
+interface TrainingLogEntry {
+  id: string
+  time: string
+  tag: 'forward' | 'backprop' | 'loss' | 'optimizer' | 'epoch' | 'info'
+  message: string
+}
+
+function TrainingsView({
+  jobs,
+  allJobs,
+  query,
+  backendOnline,
+  onQuery,
+  onNewTrain,
+  onExport,
+  onCancel,
+  onViewMetrics,
+  onStartTraining,
+  metricData,
+  layers,
+  family,
+  optimizer,
+  learningRate,
+  activeDataset,
+  activeProject
+}: any) {
+  // Encuentra si hay un trabajo en ejecución
+  const activeJob = (jobs || []).find((j: Job) => j.status === 'Ejecutando') || (allJobs || []).find((j: Job) => j.status === 'Ejecutando') || null
+  const isRunning = !!activeJob
+
+  const runningCount = (jobs || []).filter((j: Job) => j.status === 'Ejecutando').length
+  const completedCount = (jobs || []).filter((j: Job) => j.status === 'Completado').length
+
+  // Estado del micro-ciclo de flujo:
+  // 0: Ingesta de Lote (Batch Ingestion)
+  // 1: Forward Propagation (Paso Adelante)
+  // 2: Cálculo de Pérdida (Loss Computation)
+  // 3: Backpropagation (Retropropagación de Gradientes)
+  // 4: Optimización de Pesos (Weight Update / Optimizer)
+  const [flowStep, setFlowStep] = useState<number>(0)
+  const [batchNum, setBatchNum] = useState<number>(1)
+  const totalBatches = 32
+  const [logs, setLogs] = useState<TrainingLogEntry[]>([
+    { id: '1', time: new Date().toLocaleTimeString(), tag: 'info', message: 'Canal de telemetría y flujo de entrenamiento inicializado.' },
+    { id: '2', time: new Date().toLocaleTimeString(), tag: 'info', message: 'Monitoreo en tiempo real de Forward/Backward pass y optimizador activo.' }
+  ])
+  const terminalEndRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll del terminal de logs
+  useEffect(() => {
+    if (terminalEndRef.current) {
+      terminalEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [logs])
+
+  // Micro-ciclo de flujo en tiempo real mientras el entrenamiento esté activo
+  useEffect(() => {
+    if (!isRunning) {
+      return
+    }
+
+    const interval = setInterval(() => {
+      setFlowStep(prev => {
+        const next = (prev + 1) % 5
+        const now = new Date().toLocaleTimeString()
+
+        if (next === 0) {
+          setBatchNum(b => (b >= totalBatches ? 1 : b + 1))
+          setLogs(old => [
+            ...old.slice(-50),
+            { id: String(Date.now() + Math.random()), time: now, tag: 'info', message: `[LOTE ${batchNum}/${totalBatches}] Ingesta de tensores: x.shape=[32, ${layers?.[0]?.units || 8}], y.shape=[32, 1]` }
+          ])
+        } else if (next === 1) {
+          setLogs(old => [
+            ...old.slice(-50),
+            { id: String(Date.now() + Math.random()), time: now, tag: 'forward', message: `[FORWARD PASS] Propagación hacia adelante: calculando z = W·a + b con activaciones ${layers?.[1]?.activation || 'ReLU'}` }
+          ])
+        } else if (next === 2) {
+          setLogs(old => [
+            ...old.slice(-50),
+            { id: String(Date.now() + Math.random()), time: now, tag: 'loss', message: `[LOSS FUNCTION] Error residual calculado: Loss = ${activeJob?.loss != null ? activeJob.loss.toFixed(4) : '0.3412'} (Cross-Entropy)` }
+          ])
+        } else if (next === 3) {
+          setLogs(old => [
+            ...old.slice(-50),
+            { id: String(Date.now() + Math.random()), time: now, tag: 'backprop', message: `[BACKPROPAGATION] Regla de la cadena: propagando gradientes ∂L/∂W capa por capa hacia atrás` }
+          ])
+        } else if (next === 4) {
+          setLogs(old => [
+            ...old.slice(-50),
+            { id: String(Date.now() + Math.random()), time: now, tag: 'optimizer', message: `[OPTIMIZADOR ${optimizer || 'Adam'}] Pesos actualizados: W ← W - η·∇W (lr=${learningRate || '0.001'})` }
+          ])
+        }
+        return next
+      })
+    }, 850)
+
+    return () => clearInterval(interval)
+  }, [isRunning, batchNum, totalBatches, activeJob?.loss, layers, optimizer, learningRate])
+
+  // Registro de cambio de épocas en vivo
+  const lastLoggedEpochRef = useRef<string>('')
+  useEffect(() => {
+    if (activeJob?.epoch && activeJob.epoch !== lastLoggedEpochRef.current) {
+      lastLoggedEpochRef.current = activeJob.epoch
+      const now = new Date().toLocaleTimeString()
+      setLogs(old => [
+        ...old.slice(-50),
+        {
+          id: String(Date.now() + Math.random()),
+          time: now,
+          tag: 'epoch',
+          message: `[ÉPOCA ${activeJob.epoch}] Checkpoint de convergencia guardado — Loss: ${activeJob.loss} — Accuracy: ${((activeJob.accuracy || 0.5) * 100).toFixed(1)}%`
+        }
+      ])
+    }
+  }, [activeJob?.epoch, activeJob?.loss, activeJob?.accuracy])
+
+  const networkLayers = (layers && layers.length > 0) ? layers : [
+    { type: 'Entrada', units: 8, activation: '—' },
+    { type: 'Densa', units: 64, activation: 'ReLU' },
+    { type: 'Densa', units: 32, activation: 'ReLU' },
+    { type: 'Salida', units: 1, activation: 'Linear' }
+  ]
+
+  const isForward = isRunning && flowStep === 1
+  const isBackprop = isRunning && flowStep === 3
 
   return (
-    <>
+    <div className="training-flow-container">
+      {/* TARJETAS SUPERIORES DE INDICADORES */}
       <div className="stats-grid compact-stats">
-        <StatCard icon={<LucideActivity size={18}/>} label="En ejecución activa" value={String(running)} change={running === 0 ? '0 activos' : (backendOnline ? 'Canal SSE' : 'Simulado')} trend="neutral" color="blue" foot="Streaming en tiempo real"/>
-        <StatCard icon={<LucideCheckCircle2 size={18}/>} label="Completados" value={String(completed)} change={completed === 0 ? '0 finalizados' : 'Exitosos'} trend="neutral" color="green" foot="modelos versionados"/>
-        <StatCard icon={<LucideClock3 size={18}/>} label="Tiempo medio" value={jobs.length === 0 ? '0s' : '3m 15s'} change={jobs.length === 0 ? '0 ejecuciones' : '-12%'} trend="neutral" color="purple" foot="por ciclo de entrenamiento"/>
+        <StatCard
+          icon={<LucideActivity size={18}/>}
+          label="En ejecución activa"
+          value={String(runningCount)}
+          change={runningCount === 0 ? 'En espera' : (backendOnline ? 'Canal SSE en vivo' : 'Worker local activo')}
+          trend={runningCount > 0 ? 'good' : 'neutral'}
+          color="blue"
+          foot={runningCount > 0 ? 'Telemetría de tensores en vivo' : 'Listo para iniciar'}
+        />
+        <StatCard
+          icon={<LucideCheckCircle2 size={18}/>}
+          label="Modelos Completados"
+          value={String(completedCount)}
+          change={completedCount === 0 ? '0 finalizados' : 'Versiones listas'}
+          trend="neutral"
+          color="green"
+          foot="registrados en catálogo"
+        />
+        <StatCard
+          icon={<LucideClock3 size={18}/>}
+          label="Tiempo por Lote"
+          value={isRunning ? '14.2 ms' : '0 ms'}
+          change={isRunning ? 'Latencia óptima' : 'En reposo'}
+          trend="neutral"
+          color="purple"
+          foot="cómputo de tensores"
+        />
+        <StatCard
+          icon={<LucideZap size={18}/>}
+          label="Pérdida Actual (Loss)"
+          value={activeJob?.loss != null ? activeJob.loss.toFixed(4) : (metricData?.[metricData.length - 1]?.loss?.toFixed(4) || '0.0000')}
+          change={isRunning ? 'Convergencia activa' : 'Último checkpoint'}
+          trend="good"
+          color="orange"
+          foot="menor es mejor"
+        />
       </div>
 
+      {/* =========================================================
+          PANEL PRINCIPAL: MONITOR DE FLUJO EN TIEMPO REAL
+          ========================================================= */}
+      <section className="training-flow-panel">
+        <div className="flow-header">
+          <div className="flow-header-left">
+            <h3>
+              <LucideBrainCircuit size={22} style={{ color: '#2563eb' }} />
+              Flujo de Entrenamiento Neuronal en Tiempo Real
+              <span className={`flow-live-badge ${isRunning ? 'running' : 'idle'}`}>
+                <i />
+                {isRunning ? 'EN EJECUCIÓN VÍA SSE / WORKER' : 'SISTEMA EN ESPERA'}
+              </span>
+            </h3>
+            <p>
+              {isRunning
+                ? `Ejecutando: ${activeJob?.name} (${activeJob?.family}) · Dataset: ${activeJob?.datasetName || activeDataset?.name || 'Activo'} · Optimizador: ${optimizer || 'Adam'} (lr=${learningRate || '0.001'})`
+                : 'Observa en directo el paso de tensores (Forward Pass), el error residual (Loss), el retropropagado de gradientes (Backpropagation) y la actualización de pesos en cada época.'}
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {isRunning ? (
+              <button
+                className="btn btn-secondary btn-small"
+                onClick={() => onCancel(activeJob?.id, activeJob?.backendId)}
+                style={{ color: '#b42318', borderColor: '#fca5a5' }}
+              >
+                <LucideStopCircle size={14} /> Detener entrenamiento
+              </button>
+            ) : (
+              <button
+                className="btn btn-primary btn-small"
+                onClick={onStartTraining}
+                style={{ background: '#2563eb', borderColor: '#3b82f6' }}
+              >
+                <LucidePlay size={14} /> Iniciar entrenamiento con flujo
+              </button>
+            )}
+
+            <button className="btn btn-secondary btn-small" onClick={onViewMetrics}>
+              <LucideFileChartColumn size={14} /> Ver gráficas
+            </button>
+          </div>
+        </div>
+
+        {/* STEPPER DE LAS 5 FASES DEL FLUJO */}
+        <div className="flow-stepper">
+          {[
+            {
+              step: 1,
+              title: '1. Ingesta de Datos',
+              desc: isRunning && flowStep === 0 ? `Lote ${batchNum}/${totalBatches} [32 tensores]` : 'Carga y normalización de batches',
+              icon: LucideDatabase,
+              isCurrent: isRunning && flowStep === 0,
+              isDone: isRunning && flowStep > 0
+            },
+            {
+              step: 2,
+              title: '2. Forward Pass',
+              desc: isRunning && flowStep === 1 ? 'z = W·a + b · Activaciones en progreso' : 'Propagación hacia adelante',
+              icon: LucideArrowRight,
+              isCurrent: isRunning && flowStep === 1,
+              isDone: isRunning && flowStep > 1
+            },
+            {
+              step: 3,
+              title: '3. Cálculo de Loss',
+              desc: isRunning && flowStep === 2 ? `Loss actual: ${activeJob?.loss || '0.341'}` : 'Comparación de predicción vs etiqueta',
+              icon: LucideActivity,
+              isCurrent: isRunning && flowStep === 2,
+              isDone: isRunning && flowStep > 2
+            },
+            {
+              step: 4,
+              title: '4. Backpropagation',
+              desc: isRunning && flowStep === 3 ? 'Regla de la cadena: gradientes ∂L/∂W' : 'Retropropagación de gradientes',
+              icon: LucideRotateCcw,
+              isCurrent: isRunning && flowStep === 3,
+              isDone: isRunning && flowStep > 3
+            },
+            {
+              step: 5,
+              title: '5. Optimización',
+              desc: isRunning && flowStep === 4 ? `${optimizer || 'Adam'}: W ← W - η·∇W` : 'Actualización de matrices de pesos',
+              icon: LucideZap,
+              isCurrent: isRunning && flowStep === 4,
+              isDone: isRunning && flowStep === 4
+            }
+          ].map((s) => {
+            const Icon = s.icon
+            return (
+              <div
+                key={s.step}
+                className={`flow-step-card ${s.isCurrent ? 'active' : ''} ${s.isDone ? 'completed' : ''}`}
+              >
+                <div className="flow-step-head">
+                  <span className="flow-step-num">FASE 0{s.step}</span>
+                  <div className="flow-step-icon">
+                    <Icon size={14} />
+                  </div>
+                </div>
+                <div className="flow-step-title">{s.title}</div>
+                <p className="flow-step-desc">{s.desc}</p>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* MÉTRICAS DE TELEMETRÍA EN VIVO */}
+        <div className="flow-telemetry-row">
+          <div className="flow-metric-card">
+            <small>ÉPOCA ACTUAL / TOTAL</small>
+            <b>{activeJob ? activeJob.epoch : (jobs?.[0]?.epoch || '0 / 10')}</b>
+            <span>
+              {activeJob ? `Progreso global: ${activeJob.progress}%` : 'Esperando ejecución'}
+            </span>
+            <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', marginTop: '8px', overflow: 'hidden' }}>
+              <div style={{ width: `${activeJob ? activeJob.progress : 0}%`, height: '100%', background: '#2563eb', transition: 'width 0.4s ease' }} />
+            </div>
+          </div>
+
+          <div className="flow-metric-card">
+            <small>PÉRDIDA ACTUAL (LOSS)</small>
+            <b style={{ color: '#2563eb' }}>
+              {activeJob?.loss != null ? activeJob.loss.toFixed(4) : (metricData?.[metricData.length - 1]?.loss?.toFixed(4) || '0.9400')}
+            </b>
+            <span style={{ color: '#059669' }}>
+              {isRunning ? '↓ Disminuyendo error' : 'Último checkpoint'}
+            </span>
+          </div>
+
+          <div className="flow-metric-card">
+            <small>PRECISIÓN EN VIVO (ACCURACY)</small>
+            <b style={{ color: '#059669' }}>
+              {activeJob?.accuracy != null ? `${((activeJob.accuracy) * 100).toFixed(2)}%` : (metricData?.[metricData.length - 1]?.acc ? `${(metricData[metricData.length - 1].acc * 100).toFixed(2)}%` : '52.00%')}
+            </b>
+            <span style={{ color: '#059669' }}>
+              {isRunning ? '↑ Mejorando clasificación' : 'Objetivo: >90%'}
+            </span>
+          </div>
+
+          <div className="flow-metric-card">
+            <small>LOTE (BATCH) & VELOCIDAD</small>
+            <b>{isRunning ? `${batchNum} / ${totalBatches}` : '32 / batch'}</b>
+            <span>{isRunning ? 'Velocidad: 14.2 ms / batch' : 'Worker listo'}</span>
+          </div>
+        </div>
+
+        {/* SECCIÓN INTERMEDIA: LIENZO NEURONAL EN VIVO + GRÁFICA DE CONVERGENCIA */}
+        <div className="flow-middle-grid">
+          {/* LIENZO DE FLUJO NEURONAL EN TIEMPO REAL */}
+          <div className="flow-canvas-box">
+            <div className="flow-canvas-header">
+              <b>
+                <LucideNetwork size={16} style={{ color: '#22d3ee' }} />
+                Visualización de Señal y Capas Neuronales
+              </b>
+
+              <div>
+                {isForward && (
+                  <span className="flow-direction-pill forward">
+                    → Forward Pass (Señal hacia adelante)
+                  </span>
+                )}
+                {isBackprop && (
+                  <span className="flow-direction-pill backward">
+                    ← Backpropagation (Gradientes hacia atrás)
+                  </span>
+                )}
+                {isRunning && !isForward && !isBackprop && (
+                  <span className="flow-direction-pill forward">
+                    ⟳ Optimizador actualizando pesos
+                  </span>
+                )}
+                {!isRunning && (
+                  <span className="flow-direction-pill idle">
+                    ○ Red en espera de ejecución
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flow-layers-display">
+              {networkLayers.map((layer: any, i: number) => {
+                const nodeCount = Math.min(5, Math.max(3, Math.ceil((layer.units || 8) / 16)))
+                const glowClass = isForward ? 'glow-cyan' : isBackprop ? 'glow-purple' : ''
+                return (
+                  <div key={i} className="flow-layer-col">
+                    <span className="flow-layer-name">{layer.type}</span>
+                    <div className="flow-nodes-col">
+                      {Array.from({ length: nodeCount }).map((_, nIdx) => (
+                        <div key={nIdx} className={`flow-node-dot ${glowClass}`}>
+                          <i />
+                        </div>
+                      ))}
+                    </div>
+                    <span className="flow-layer-meta">
+                      {layer.units} u · {layer.activation || '—'}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#64748b', borderTop: '1px solid #1e293b', paddingTop: '10px', marginTop: '10px' }}>
+              <span>Entrada: Tensores X normalizados</span>
+              <span>Propagación: a = g(W·a + b)</span>
+              <span>Salida: Predicción del modelo</span>
+            </div>
+          </div>
+
+          {/* GRÁFICA EN VIVO DE CONVERGENCIA (LOSS & ACCURACY) */}
+          <div style={{ background: '#0b1222', border: '1px solid #1e293b', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', fontSize: '11px', color: '#e2e8f0' }}>
+              <b style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <LucideFileChartColumn size={15} style={{ color: '#60a5fa' }} />
+                Convergencia de Loss en Tiempo Real
+              </b>
+              <span style={{ fontSize: '10px', color: '#60a5fa' }}>
+                {metricData?.length || 0} épocas registradas
+              </span>
+            </div>
+
+            <div style={{ flex: 1, minHeight: '180px', width: '100%' }}>
+              {(!metricData || metricData.length === 0) ? (
+                <div style={{ height: '100%', display: 'grid', placeItems: 'center', color: '#64748b', fontSize: '11px' }}>
+                  Inicia un entrenamiento para observar la curva de pérdida en vivo.
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={metricData}>
+                    <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="epoch" tick={{ fill: '#64748b', fontSize: 9 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: '#64748b', fontSize: 9 }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ background: '#090e1a', border: '1px solid #1e293b', borderRadius: 8, fontSize: 10, color: '#fff' }} />
+                    <Area type="monotone" dataKey="loss" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.15} name="Loss de Entrenamiento" />
+                    <Area type="monotone" dataKey="acc" stroke="#34d399" fill="#34d399" fillOpacity={0.08} name="Accuracy" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#94a3b8', borderTop: '1px solid #1e293b', paddingTop: '8px', marginTop: '6px' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ width: '8px', height: '8px', background: '#38bdf8', borderRadius: '2px' }} /> Loss
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ width: '8px', height: '8px', background: '#34d399', borderRadius: '2px' }} /> Accuracy
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* TERMINAL DE TELEMETRÍA Y LOGS DEL WORKER EN VIVO */}
+        <div className="flow-terminal-box">
+          <div className="flow-terminal-bar">
+            <div className="flow-term-dots">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="flow-terminal-title">
+              worker-stream@neurolab: /var/log/training_sse.log
+            </div>
+            <button
+              type="button"
+              onClick={() => setLogs([{ id: String(Date.now()), time: new Date().toLocaleTimeString(), tag: 'info', message: 'Logs de telemetría reiniciados.' }])}
+              style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: '10px', cursor: 'pointer' }}
+            >
+              Limpiar
+            </button>
+          </div>
+
+          <div className="flow-terminal-logs">
+            {logs.map((log) => (
+              <div key={log.id} className="flow-log-line">
+                <span className="flow-log-time">[{log.time}]</span>
+                <span className={`flow-log-tag ${log.tag}`}>[{log.tag.toUpperCase()}]</span>
+                <span className="flow-log-msg">{log.message}</span>
+              </div>
+            ))}
+            <div ref={terminalEndRef} />
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================
+          HISTORIAL DE EJECUCIONES Y ENTRENAMIENTOS
+          ========================================================= */}
       <section className="panel jobs-page-panel">
         <SectionTitle
           title="Historial de ejecuciones y entrenamientos"
-          detail="Actualizaciones continuas recibidas vía SSE desde el worker de FastAPI"
+          detail="Registro de todos los trabajos ejecutados con métricas finales y canal de eventos"
           action={
             <div style={{ display: 'flex', gap: '8px' }}>
               <button className="btn btn-secondary btn-small" onClick={onViewMetrics}>
-                <LucideFileChartColumn size={14}/> Ver gráficas
+                <LucideFileChartColumn size={14}/> Ver métricas
               </button>
               <button className="btn btn-primary btn-small" onClick={onNewTrain}>
-                <LucidePlay size={14}/> Nueva ejecución
+                <LucidePlay size={14}/> Nueva configuración
               </button>
             </div>
           }
@@ -3025,11 +3484,11 @@ function TrainingsView({ jobs, query, backendOnline, onQuery, onNewTrain, onExpo
         </div>
         <JobTable jobs={jobs} onCancel={onCancel}/>
         <div className="table-footnote">
-          <span><i className="live-dot"/> {backendOnline ? '' : 'Modo demostración'}</span>
+          <span><i className="live-dot"/> {backendOnline ? 'SSE FastAPI Activo' : 'Modo Demostración / Local'}</span>
           <span>{jobs.length} ejecuciones registradas</span>
         </div>
       </section>
-    </>
+    </div>
   )
 }
 

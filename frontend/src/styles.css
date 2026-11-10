@@ -1592,3 +1592,407 @@ css
   .landing-footer { flex-direction: column; gap: 12px; text-align: center; }
   .perceptron-grid { grid-template-columns: 1fr; }
 }
+
+/* =========================================================
+   MONITOR DE FLUJO DE ENTRENAMIENTO EN TIEMPO REAL (M04)
+   ========================================================= */
+.training-flow-container {
+  margin-bottom: 24px;
+}
+.training-flow-panel {
+  background: #ffffff;
+  border: 1px solid #d0d8e4;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  margin-bottom: 20px;
+}
+.flow-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.flow-header-left h3 {
+  font: 700 17px 'Manrope', sans-serif;
+  margin: 0 0 4px;
+  color: #101828;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.flow-header-left p {
+  margin: 0;
+  font-size: 11px;
+  color: #667085;
+}
+.flow-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+.flow-live-badge.running {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+.flow-live-badge.idle {
+  background: #f1f5f9;
+  color: #475467;
+  border: 1px solid #e2e8f0;
+}
+.flow-live-badge i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.flow-live-badge.running i {
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: liveFlowPulse 1.5s infinite;
+}
+.flow-live-badge.idle i {
+  background: #94a3b8;
+}
+
+@keyframes liveFlowPulse {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+/* FLOW STEPPER */
+.flow-stepper {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.flow-step-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 12px;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.flow-step-card.active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
+}
+.flow-step-card.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #06b6d4);
+}
+.flow-step-card.completed {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.flow-step-card.completed::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #22c55e;
+}
+.flow-step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.flow-step-num {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #64748b;
+}
+.flow-step-card.active .flow-step-num {
+  color: #2563eb;
+}
+.flow-step-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: #e2e8f0;
+  color: #475467;
+  display: grid;
+  place-items: center;
+}
+.flow-step-card.active .flow-step-icon {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+.flow-step-card.completed .flow-step-icon {
+  background: #16a34a;
+  color: #ffffff;
+}
+.flow-step-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 3px;
+  line-height: 1.25;
+}
+.flow-step-desc {
+  font-size: 10px;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* FLOW MIDDLE SECTION (CANVAS + CHART) */
+.flow-middle-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.95fr;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+/* INTERACTIVE NEURAL FLOW STAGE */
+.flow-canvas-box {
+  background: #0b1222;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 18px;
+  color: #f8fafc;
+  position: relative;
+  overflow: hidden;
+}
+.flow-canvas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 11px;
+}
+.flow-canvas-header b {
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.flow-direction-pill {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+.flow-direction-pill.forward {
+  background: rgba(6, 182, 212, 0.2);
+  color: #22d3ee;
+  border: 1px solid rgba(6, 182, 212, 0.4);
+}
+.flow-direction-pill.backward {
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+.flow-direction-pill.idle {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+}
+
+.flow-layers-display {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  min-height: 170px;
+  position: relative;
+  padding: 10px 0;
+}
+.flow-layer-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+}
+.flow-layer-name {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #94a3b8;
+}
+.flow-nodes-col {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.flow-node-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid #334155;
+  background: #1e293b;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s ease;
+}
+.flow-node-dot i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #64748b;
+}
+.flow-node-dot.glow-cyan {
+  border-color: #22d3ee;
+  background: #083344;
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.6);
+}
+.flow-node-dot.glow-cyan i {
+  background: #38bdf8;
+}
+.flow-node-dot.glow-purple {
+  border-color: #c084fc;
+  background: #3b0764;
+  box-shadow: 0 0 12px rgba(192, 132, 252, 0.6);
+}
+.flow-node-dot.glow-purple i {
+  background: #e879f9;
+}
+.flow-layer-meta {
+  font-size: 9px;
+  color: #64748b;
+  font-family: monospace;
+}
+
+/* FLOW TERMINAL LOGS */
+.flow-terminal-box {
+  background: #090e1a;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 250px;
+}
+.flow-terminal-bar {
+  background: #131b2e;
+  border-bottom: 1px solid #1e293b;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.flow-term-dots {
+  display: flex;
+  gap: 6px;
+}
+.flow-term-dots span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.flow-term-dots span:nth-child(1) { background: #ef4444; }
+.flow-term-dots span:nth-child(2) { background: #f59e0b; }
+.flow-term-dots span:nth-child(3) { background: #10b981; }
+.flow-terminal-title {
+  font-family: monospace;
+  font-size: 10px;
+  color: #94a3b8;
+}
+.flow-terminal-logs {
+  flex: 1;
+  padding: 12px 14px;
+  overflow-y: auto;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 10px;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+.flow-log-line {
+  margin-bottom: 4px;
+  display: flex;
+  gap: 8px;
+}
+.flow-log-time {
+  color: #64748b;
+}
+.flow-log-tag {
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 9px;
+}
+.flow-log-tag.forward { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
+.flow-log-tag.backprop { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+.flow-log-tag.loss { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+.flow-log-tag.optimizer { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.flow-log-tag.epoch { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+.flow-log-tag.info { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+.flow-log-msg {
+  color: #f1f5f9;
+}
+
+/* FLOW TELEMETRY METRICS ROW */
+.flow-telemetry-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.flow-metric-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.flow-metric-card small {
+  font-size: 10px;
+  color: #64748b;
+  display: block;
+  margin-bottom: 4px;
+}
+.flow-metric-card b {
+  font-family: 'Manrope', sans-serif;
+  font-size: 20px;
+  color: #0f172a;
+  display: block;
+  letter-spacing: -0.5px;
+}
+.flow-metric-card span {
+  font-size: 10px;
+  color: #059669;
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .flow-stepper {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .flow-middle-grid {
+    grid-template-columns: 1fr;
+  }
+  .flow-telemetry-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 650px) {
+  .flow-stepper {
+    grid-template-columns: 1fr;
+  }
+  .flow-telemetry-row {
+    grid-template-columns: 1fr;
+  }
+}
