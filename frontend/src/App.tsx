@@ -3217,67 +3217,8 @@ function TrainingsView({
         </div>
 
         {/* STEPPER DE LAS 5 FASES DEL FLUJO */}
-        <div className="flow-stepper">
-          {[
-            {
-              step: 1,
-              title: '1. Ingesta de Datos',
-              desc: isRunning && flowStep === 0 ? `Lote ${batchNum}/${totalBatches} [32 tensores]` : 'Carga y normalización de batches',
-              icon: LucideDatabase,
-              isCurrent: isRunning && flowStep === 0,
-              isDone: isRunning && flowStep > 0
-            },
-            {
-              step: 2,
-              title: '2. Forward Pass',
-              desc: isRunning && flowStep === 1 ? 'z = W·a + b · Activaciones en progreso' : 'Propagación hacia adelante',
-              icon: LucideArrowRight,
-              isCurrent: isRunning && flowStep === 1,
-              isDone: isRunning && flowStep > 1
-            },
-            {
-              step: 3,
-              title: '3. Cálculo de Loss',
-              desc: isRunning && flowStep === 2 ? `Loss actual: ${activeJob?.loss || '0.341'}` : 'Comparación de predicción vs etiqueta',
-              icon: LucideActivity,
-              isCurrent: isRunning && flowStep === 2,
-              isDone: isRunning && flowStep > 2
-            },
-            {
-              step: 4,
-              title: '4. Backpropagation',
-              desc: isRunning && flowStep === 3 ? 'Regla de la cadena: gradientes ∂L/∂W' : 'Retropropagación de gradientes',
-              icon: LucideRotateCcw,
-              isCurrent: isRunning && flowStep === 3,
-              isDone: isRunning && flowStep > 3
-            },
-            {
-              step: 5,
-              title: '5. Optimización',
-              desc: isRunning && flowStep === 4 ? `${optimizer || 'Adam'}: W ← W - η·∇W` : 'Actualización de matrices de pesos',
-              icon: LucideZap,
-              isCurrent: isRunning && flowStep === 4,
-              isDone: isRunning && flowStep === 4
-            }
-          ].map((s) => {
-            const Icon = s.icon
-            return (
-              <div
-                key={s.step}
-                className={`flow-step-card ${s.isCurrent ? 'active' : ''} ${s.isDone ? 'completed' : ''}`}
-              >
-                <div className="flow-step-head">
-                  <span className="flow-step-num">FASE 0{s.step}</span>
-                  <div className="flow-step-icon">
-                    <Icon size={14} />
-                  </div>
-                </div>
-                <div className="flow-step-title">{s.title}</div>
-                <p className="flow-step-desc">{s.desc}</p>
-              </div>
-            )
-          })}
-        </div>
+        
+         
 
         {/* MÉTRICAS DE TELEMETRÍA EN VIVO */}
         <div className="flow-telemetry-row">
