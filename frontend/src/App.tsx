@@ -62,8 +62,12 @@ import {
   Network as LucideNetwork,
   Zap as LucideZap,
   Mail as LucideMail,
-  LockKeyhole as LucideLockKeyhole
+  LockKeyhole as LucideLockKeyhole,
+  ArrowLeft as LucideArrowLeft,
+  Globe as LucideGlobe
 } from 'lucide-react'
+
+import LandingPage from './pages/ladingpage'
 
 
 export type Page =
@@ -284,7 +288,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
     return api.getCurrentUser()
   })
-  const [authScreen, setAuthScreen] = useState<'landing' | 'login'>('landing')
+  const [authScreen, setAuthScreen] = useState<'landing' | 'login' | 'platform'>('landing')
   const activeTimersRef = useRef<Map<string, any>>(new Map())
 
   const [page, setPage] = useState<Page>('Dashboard')
@@ -332,6 +336,7 @@ export default function App() {
   const handleLogout = () => {
     api.logout()
     setCurrentUser(null)
+    setAuthScreen('landing')
     notify('Sesión cerrada exitosamente.')
   }
 
@@ -980,18 +985,34 @@ export default function App() {
   const activeJobsCount = jobs.filter(j => j.status === 'Ejecutando' || j.status === 'En cola').length
   const filteredJobs = jobs.filter(j => `${j.name} ${j.family} ${j.id}`.toLowerCase().includes(query.toLowerCase()))
 
-  // SI NO HAY SESIÓN INICIADA, MOSTRAR LA PANTALLA DE LOGIN CON CREDENCIALES DE ADMINISTRADOR
-  if (!currentUser) {
+  // 1. PASO 1: LANDING PAGE (PÁGINA PRINCIPAL)
+  if (authScreen === 'landing') {
+    return (
+      <LandingPage
+        onGoToLogin={() => setAuthScreen('login')}
+        onGoToPlatform={() => setAuthScreen('platform')}
+        isLoggedIn={!!currentUser}
+        currentUser={currentUser}
+      />
+    )
+  }
+
+  // 2. PASO 2: LOGIN (AUTENTICACIÓN)
+  if (!currentUser || authScreen === 'login') {
     return (
       <LoginView
         onLoginSuccess={(loggedUser) => {
           setCurrentUser(loggedUser)
           setCurrentUserRole(loggedUser.role || 'admin')
+          setAuthScreen('platform')
           notify(`Bienvenido a NeuroLab Enterprise, ${loggedUser.display_name}.`)
         }}
+        onBackToLanding={() => setAuthScreen('landing')}
       />
     )
   }
+
+  // 3. PASO 3: PLATAFORMA EN GENERAL
 
   return (
     <div className="app-shell">
@@ -1113,8 +1134,15 @@ export default function App() {
               <LucideBell size={18}/><i/>
             </button>
 
-            {/* Profile Avatar & Logout in Header */}
+            {/* Profile Avatar, Landing Page link & Logout in Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                className="btn btn-secondary btn-small"
+                onClick={() => setAuthScreen('landing')}
+                title="Ver Página de Inicio (Landing Page)"
+              >
+                <LucideGlobe size={13}/> Ver Landing
+              </button>
               <div className="top-avatar" onClick={() => setModal('user-role')} style={{ cursor: 'pointer' }} title={`Sesión activa: ${currentUser.email}`}>
                 AD
               </div>
@@ -1635,9 +1663,11 @@ export default function App() {
 // PANTALLA DE LOGIN CON CREDENCIALES DE ADMINISTRADOR
 // -------------------------------------------------------------
 function LoginView({
-  onLoginSuccess
+  onLoginSuccess,
+  onBackToLanding
 }: {
   onLoginSuccess: (user: AuthUser) => void
+  onBackToLanding?: () => void
 }) {
   const [email, setEmail] = useState('admin@neurolab.enterprise')
   const [password, setPassword] = useState('admin123')
@@ -1694,6 +1724,21 @@ function LoginView({
   return (
     <div className="login-shell">
       <div className="login-box">
+
+        {/* -------------------------------------------------------
+            VOLVER A LA LANDING PAGE
+        ------------------------------------------------------- */}
+        {onBackToLanding && (
+          <button
+            type="button"
+            onClick={onBackToLanding}
+            className="login-back-btn"
+            title="Volver a la página principal"
+          >
+            <LucideArrowLeft size={14} />
+            <span>Volver a la página de inicio</span>
+          </button>
+        )}
 
         {/* -------------------------------------------------------
             MARCA
@@ -1859,6 +1904,36 @@ function LoginView({
           </button>
 
         </form>
+
+        {/* -------------------------------------------------------
+            ACCESO RÁPIDO DE ADMINISTRADOR DEMO
+        ------------------------------------------------------- */}
+        <div style={{ marginTop: '14px', marginBottom: '8px' }}>
+          <button
+            type="button"
+            onClick={handleQuickAdminLogin}
+            disabled={loading}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              border: '1px solid #c7d7fe',
+              background: '#eff4ff',
+              color: '#1d4ed8',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <LucideKey size={14} />
+            <span>Acceso Rápido Administrador Demo (1 Clic)</span>
+          </button>
+        </div>
 
         {/* -------------------------------------------------------
             SEGURIDAD
